@@ -1,6 +1,6 @@
 #!/bin/sh
 
-manifests=$(dirname $0)/manifests
+manifests=$(dirname $0)/manifests-small
 
 shift
 
