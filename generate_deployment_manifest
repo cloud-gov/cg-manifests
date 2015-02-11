@@ -1,0 +1,12 @@
+#!/bin/sh
+
+manifests=$(dirname $0)/manifests
+
+shift
+
+spiff merge \
+  $manifests/cf-deployment.yml \
+  $manifests/cf-jobs.yml \
+  $manifests/cf-properties.yml \
+  $manifests/cf-infrastructure-aws.yml \
+  $manifests/cf-secrets.yml
