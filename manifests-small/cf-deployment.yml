@@ -8,7 +8,7 @@ meta:
   default_env:
     # Default vcap & root password on deployed VMs (ie c1oudc0w)
     bosh:
-      password: (( merge || "AuiPExsmmWyjJQKfNIIonqIA60SJho+zRy6Ww1UQbqvbeQZdW73Xxg=" ))
+      password: (( merge ))
 
   releases:
   - name: cf
