@@ -14,5 +14,6 @@ Cloud Foundry deployment.
 ### How to deploy the manifest:
 
 Wherever you have your bosh installation run:
+
 1. `bosh deployment manifest.yml`
 1. `bosh deploy`
