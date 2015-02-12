@@ -266,6 +266,8 @@ jobs:
       networks: (( meta.networks.z1 ))
       doppler:
         zone: z1
+      traffic_controller:
+        zone: z1
     update: (( merge || empty_hash ))
 
   - name: loggregator_plus_controller_z2
@@ -278,6 +280,8 @@ jobs:
       networks: (( meta.networks.z2 ))
       doppler:
         zone: z2
+      traffic_controller:
+        zone: z1
     update: (( merge || empty_hash ))
 
   - name: router_z1
