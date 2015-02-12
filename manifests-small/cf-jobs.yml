@@ -25,23 +25,15 @@ meta:
   api_templates:
   - name: cloud_controller_ng
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
 
   api_worker_templates:
   - name: cloud_controller_worker
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
-  - name: nfs_mounter
-    release: (( meta.release.name ))
 
   clock_templates:
   - name: cloud_controller_clock
-    release: (( meta.release.name ))
-  - name: metron_agent
     release: (( meta.release.name ))
 
   nats_templates:
@@ -49,21 +41,15 @@ meta:
     release: (( meta.release.name ))
   - name: nats_stream_forwarder
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
 
   dea_templates:
   - name: dea_next
     release: (( meta.release.name ))
   - name: dea_logging_agent
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
 
   router_templates:
   - name: gorouter
-    release: (( meta.release.name ))
-  - name: metron_agent
     release: (( meta.release.name ))
 
   etcd_templates:
@@ -71,37 +57,25 @@ meta:
     release: (( meta.release.name ))
   - name: etcd_metrics_server
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
 
   stats_templates:
   - name: collector
-    release: (( meta.release.name ))
-  - name: metron_agent
     release: (( meta.release.name ))
 
   nfs_templates:
   - name: debian_nfs_server
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
 
   uaa_templates:
   - name: uaa
-    release: (( meta.release.name ))
-  - name: metron_agent
     release: (( meta.release.name ))
 
   login_templates:
   - name: login
     release: (( meta.release.name ))
-  - name: metron_agent
-    release: (( meta.release.name ))
 
   hm9000_templates:
   - name: hm9000
-    release: (( meta.release.name ))
-  - name: metron_agent
     release: (( meta.release.name ))
 
   loggregator_templates:
@@ -111,6 +85,8 @@ meta:
   loggregator_trafficcontroller_templates:
   - name: loggregator_trafficcontroller
     release: (( meta.release.name ))
+
+  metron_agent_templates:
   - name: metron_agent
     release: (( meta.release.name ))
 
@@ -118,7 +94,7 @@ meta:
 
 jobs:
   - name: nats_etcd_z1
-    templates: (( merge || meta.nats_templates meta.etcd_templates ))
+    templates: (( merge || meta.nats_templates meta.etcd_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z1
     persistent_disk: 10024
@@ -132,7 +108,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: nats_etcd_z2
-    templates: (( merge || meta.nats_templates meta.etcd_templates ))
+    templates: (( merge || meta.nats_templates meta.etcd_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z2
     persistent_disk: 10024
@@ -146,19 +122,19 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: stats_clock_z1
-    templates: (( merge || meta.stats_templates meta.clock_templates ))
+    templates: (( merge || meta.stats_templates meta.clock_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z1
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
+      networks: (( meta.networks.z1  ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
 
   - name: nfs_z1
-    templates: (( merge || meta.nfs_templates ))
+    templates: (( merge || meta.nfs_templates meta.metron_agent_templates ))
     instances: 0
     resource_pool: medium_z1
     persistent_disk: 102400
@@ -171,7 +147,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: login_uaa_z1
-    templates: (( merge || meta.uaa_templates meta.login_templates ))
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z1
     networks:
@@ -183,7 +159,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: login_uaa_z2
-    templates: (( merge || meta.uaa_templates meta.login_templates ))
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z2
     networks:
@@ -195,7 +171,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: api_z1
-    templates: (( merge || meta.api_templates meta.api_worker_templates ))
+    templates: (( merge || meta.api_templates meta.api_worker_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z1
     persistent_disk: 10000
@@ -209,7 +185,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: api_z2
-    templates: (( merge || meta.api_templates meta.api_worker_templates ))
+    templates: (( merge || meta.api_templates meta.api_worker_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z2
     persistent_disk: 10000
@@ -223,7 +199,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: hm9000_z1
-    templates: (( merge || meta.hm9000_templates ))
+    templates: (( merge || meta.hm9000_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z1
     networks:
@@ -235,7 +211,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: hm9000_z2
-    templates: (( merge || meta.hm9000_templates ))
+    templates: (( merge || meta.hm9000_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z2
     networks:
@@ -247,7 +223,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: runner_z1
-    templates: (( merge || meta.dea_templates ))
+    templates: (( merge || meta.dea_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: runner_z1
     networks:
@@ -264,7 +240,7 @@ jobs:
       max_in_flight: 1
 
   - name: runner_z2
-    templates: (( merge || meta.dea_templates ))
+    templates: (( merge || meta.dea_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: runner_z2
     networks:
@@ -281,7 +257,7 @@ jobs:
       max_in_flight: 1
 
   - name: loggregator_plus_controller_z1
-    templates: (( merge || meta.loggregator_templates meta.loggregator_trafficcontroller_templates ))
+    templates: (( merge || meta.loggregator_templates meta.loggregator_trafficcontroller_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z1
     networks:
@@ -293,7 +269,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: loggregator_plus_controller_z2
-    templates: (( merge || meta.loggregator_templates meta.loggregator_trafficcontroller_templates ))
+    templates: (( merge || meta.loggregator_templates meta.loggregator_trafficcontroller_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z2
     networks:
@@ -305,7 +281,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: router_z1
-    templates: (( merge || meta.router_templates ))
+    templates: (( merge || meta.router_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: router_z1
     networks:
@@ -318,7 +294,7 @@ jobs:
     update: (( merge || empty_hash ))
 
   - name: router_z2
-    templates: (( merge || meta.router_templates ))
+    templates: (( merge || meta.router_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: router_z2
     networks:
