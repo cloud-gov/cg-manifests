@@ -13,9 +13,12 @@ meta:
     region: us-east-1
 
   stemcell:
-    name: bosh-aws-xen-ubuntu-trusty-go_agent
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
     version: latest
 
+  stemcell_pv:
+    name: bosh-aws-xen-ubuntu-trusty-go_agent
+    version: latest
 
 properties:
   <<: (( merge ))
@@ -65,22 +68,24 @@ networks: (( merge ))
 resource_pools:
   - name: small_z1
     cloud_properties:
-      instance_type: t2.small
+      instance_type: m1.small
+      stemcell: (( meta.stemcell_pv ))
       availability_zone: (( meta.zones.z1 ))
 
   - name: small_z2
     cloud_properties:
-      instance_type: t2.small
+      instance_type: m1.small
+      stemcell: (( meta.stemcell_pv ))
       availability_zone: (( meta.zones.z2 ))
 
   - name: medium_z1
     cloud_properties:
-      instance_type: t2.medium
+      instance_type: m3.medium
       availability_zone: (( meta.zones.z1 ))
 
   - name: medium_z2
     cloud_properties:
-      instance_type: t2.medium
+      instance_type: m3.medium
       availability_zone: (( meta.zones.z2 ))
 
   - name: large_z1
@@ -117,7 +122,8 @@ resource_pools:
 
   - name: small_errand
     cloud_properties:
-      instance_type: t2.small
+      instance_type: m1.small
+      stemcell: (( meta.stemcell_pv ))
       availability_zone: (( meta.zones.z1 ))
 
   - name: xlarge_errand
