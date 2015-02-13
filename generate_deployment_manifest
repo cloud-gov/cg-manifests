@@ -2,8 +2,6 @@
 
 manifests=$(dirname $0)/manifests-small
 
-shift
-
 spiff merge \
   $manifests/cf-deployment.yml \
   $manifests/cf-jobs.yml \
