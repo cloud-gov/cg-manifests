@@ -93,11 +93,10 @@ meta:
 
 
 jobs:
-  - name: nats_etcd_z1
-    templates: (( merge || meta.nats_templates meta.etcd_templates meta.metron_agent_templates ))
+  - name: etcd_z1
+    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z1
-    persistent_disk: 10024
     networks:
       - name: cf1
         static_ips: (( merge ))
@@ -107,11 +106,36 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: nats_etcd_z2
-    templates: (( merge || meta.nats_templates meta.etcd_templates meta.metron_agent_templates ))
+  - name: etcd_z2
+    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z2
-    persistent_disk: 10024
+    networks:
+      - name: cf2
+        static_ips: (( merge ))
+    properties:
+      networks: (( meta.networks.z2 ))
+      metron_agent:
+        zone: z2
+    update: (( merge || empty_hash ))
+
+  - name: nats_z1
+    templates: (( merge || meta.nats_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z1
+    networks:
+      - name: cf1
+        static_ips: (( merge ))
+    properties:
+      networks: (( meta.networks.z1 ))
+      metron_agent:
+        zone: z1
+    update: (( merge || empty_hash ))
+
+  - name: nats_z2
+    templates: (( merge || meta.nats_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z2
     networks:
       - name: cf2
         static_ips: (( merge ))
@@ -146,8 +170,8 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_z1
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.metron_agent_templates ))
+  - name: login_uaa_hm9000_z1
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z1
     networks:
@@ -158,8 +182,8 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_z2
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.metron_agent_templates ))
+  - name: login_uaa_hm9000_z2
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: medium_z2
     networks:
@@ -196,30 +220,6 @@ jobs:
       metron_agent:
         zone: z2
       nfs_server: (( meta.nfs_server ))
-    update: (( merge || empty_hash ))
-
-  - name: hm9000_z1
-    templates: (( merge || meta.hm9000_templates meta.metron_agent_templates ))
-    instances: 1
-    resource_pool: small_z1
-    networks:
-      - name: cf1
-    properties:
-      networks: (( meta.networks.z1 ))
-      metron_agent:
-        zone: z1
-    update: (( merge || empty_hash ))
-
-  - name: hm9000_z2
-    templates: (( merge || meta.hm9000_templates meta.metron_agent_templates ))
-    instances: 1
-    resource_pool: small_z2
-    networks:
-      - name: cf2
-    properties:
-      networks: (( meta.networks.z2 ))
-      metron_agent:
-        zone: z2
     update: (( merge || empty_hash ))
 
   - name: runner_z1
@@ -353,16 +353,16 @@ properties:
   nats:
     user: (( merge ))
     password: (( merge ))
-    address: (( jobs.nats_etcd_z1.networks.cf1.static_ips.[0] ))
+    address: (( jobs.nats_z1.networks.cf1.static_ips.[0] ))
     port: 4222
-    machines: (( jobs.nats_etcd_z1.networks.cf1.static_ips jobs.nats_etcd_z2.networks.cf2.static_ips ))
+    machines: (( jobs.nats_z1.networks.cf1.static_ips jobs.nats_z2.networks.cf2.static_ips ))
     debug: false
     trace: false
     monitor_port: 0
     prof_port: 0
 
   etcd:
-    machines: (( jobs.nats_etcd_z1.networks.cf1.static_ips jobs.nats_etcd_z2.networks.cf2.static_ips ))
+    machines: (( jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
 
   etcd_metrics_server:
     nats:
