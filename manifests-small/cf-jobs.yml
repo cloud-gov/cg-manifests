@@ -93,32 +93,6 @@ meta:
 
 
 jobs:
-  - name: etcd_z1
-    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
-    instances: 1
-    resource_pool: small_z1
-    networks:
-      - name: cf1
-        static_ips: (( merge ))
-    properties:
-      networks: (( meta.networks.z1 ))
-      metron_agent:
-        zone: z1
-    update: (( merge || empty_hash ))
-
-  - name: etcd_z2
-    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
-    instances: 1
-    resource_pool: small_z2
-    networks:
-      - name: cf2
-        static_ips: (( merge ))
-    properties:
-      networks: (( meta.networks.z2 ))
-      metron_agent:
-        zone: z2
-    update: (( merge || empty_hash ))
-
   - name: nats_z1
     templates: (( merge || meta.nats_templates meta.metron_agent_templates ))
     instances: 1
@@ -134,6 +108,32 @@ jobs:
 
   - name: nats_z2
     templates: (( merge || meta.nats_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z2
+    networks:
+      - name: cf2
+        static_ips: (( merge ))
+    properties:
+      networks: (( meta.networks.z2 ))
+      metron_agent:
+        zone: z2
+    update: (( merge || empty_hash ))
+
+  - name: etcd_z1
+    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z1
+    networks:
+      - name: cf1
+        static_ips: (( merge ))
+    properties:
+      networks: (( meta.networks.z1 ))
+      metron_agent:
+        zone: z1
+    update: (( merge || empty_hash ))
+
+  - name: etcd_z2
+    templates: (( merge || meta.etcd_templates meta.metron_agent_templates ))
     instances: 1
     resource_pool: small_z2
     networks:
