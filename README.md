@@ -9,7 +9,7 @@ Cloud Foundry deployment.
 1. Copy the secrets example to secrets file:
 `cp manifests/cf-secrets-example.yml manifests/cf-secrets.yml`
 1. Change all the variables in CAPS from `manifests/cf-secrets.yml` to proper values
-1. Run `./generate_deployment_maifest > manifest.yml`
+1. Run `./generate_deployment_manifest > manifest.yml`
 
 ### How to deploy the manifest:
 
