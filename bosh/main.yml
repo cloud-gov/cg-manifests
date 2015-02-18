@@ -1,0 +1,142 @@
+name: bosh
+
+meta:
+  subnet: ~
+  security_group: ~
+  db: ~
+
+# Execute the "bosh status" command to obtain the director_uuid.
+director_uuid: (( merge ))
+
+release:
+  name: bosh
+  version: latest
+
+compilation:
+  workers: 3
+  network: default
+  reuse_compilation_vms: true
+  cloud_properties:
+    instance_type: m1.small
+
+update:
+  canaries: 1
+  canary_watch_time: 3000-120000
+  update_watch_time: 3000-120000
+  max_in_flight: 4
+  max_errors: 1
+
+networks:
+  - name: default
+    subnets:
+      - static:
+        - 10.10.0.7 - 10.10.0.10
+        cloud_properties:
+          subnet: (( meta.subnet ))
+          security_groups:
+            - (( meta.security_group ))
+        range: 10.10.0.0/24
+        reserved: [10.10.0.1-10.10.0.6]
+
+resource_pools:
+  - name: medium
+    network: default
+    size: 1
+    stemcell:
+      name: bosh-aws-xen-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: m1.small
+
+jobs:
+  - name: bosh
+    template:
+    - powerdns
+    - nats
+    - redis
+    - director
+    - blobstore
+    - registry
+    - health_monitor
+    instances: 1
+    resource_pool: medium
+    persistent_disk: 100480
+    networks:
+      - name: default
+        static_ips: [10.10.0.7]
+
+properties:
+  env:
+
+  postgres: &bosh_db
+    adapter: postgres
+    port: 5432
+    user: (( meta.db.user ))
+    password: (( meta.db.pass ))
+    host: (( meta.db.host ))
+    database: bosh
+
+  dns:
+    address: 10.10.0.7
+    db: *bosh_db
+    user: powerdns
+    password: powerdns
+    database:
+      name: powerdns
+    webserver:
+      password: powerdns
+    replication:
+      basic_auth: replication:zxKDUBeCfKYX
+      user: replication
+      password: powerdns
+    recursor: 10.10.0.6
+
+  redis:
+    address: 0.bosh.default.bosh.microbosh
+    password: redis
+
+  nats:
+    address: 0.bosh.default.bosh.microbosh
+    user: nats
+    password: nats
+
+  director:
+    name: bosh
+    address: 0.bosh.default.bosh.microbosh
+    db: *bosh_db
+
+  blobstore:
+    address: 0.bosh.default.bosh.microbosh
+    agent:
+      user: agent
+      password: agent
+    director:
+      user: director
+      password: director
+
+  registry:
+    address: 0.bosh.default.bosh.microbosh
+    db: *bosh_db
+    http:
+      user: registry
+      password: registry
+
+  hm:
+    http:
+      user: hm
+      password: hm
+    director_account:
+      user: admin
+      password: admin
+    event_nats_enabled: false
+    email_notifications: false
+    tsdb_enabled: false
+    pagerduty_enabled: false
+    varz_enabled: true
+
+  aws:
+    access_key_id: (( merge ))
+    secret_access_key: (( merge ))
+    default_key_name: bosh
+    region: us-east-1
+    default_security_groups: [ (( meta.security_group )) ]
