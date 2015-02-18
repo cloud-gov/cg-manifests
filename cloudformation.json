@@ -1,0 +1,607 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation for Cloud Foundry",
+
+  "Parameters" : {
+
+    "DescriptionTag": {
+      "Description" : "Stack Name",
+      "Default": "cf-chili",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Default": "bosh",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+
+    "DBName": {
+      "Default": "ccdb",
+      "Description" : "Postgres database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "NoEcho": "true",
+      "Default": "cfdb",
+      "Description" : "Username for database access",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "NoEcho": "true",
+      "Default": "password",
+      "Description" : "Password for database access",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DBAllocatedStorage": {
+      "Default": "10",
+      "Description" : "The size of the database (Gb)",
+      "Type": "Number",
+      "MinValue": "5",
+      "MaxValue": "1024",
+      "ConstraintDescription" : "must be between 5 and 1024Gb."
+    },
+
+    "TrustedCidr": {
+      "Description" : "Trusted SSH CIDR",
+      "Type": "String"
+    }
+
+  },
+
+  "Resources" : {
+
+    "mainVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock" : "10.10.0.0/16",
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "InstanceTenancy" : "default",
+        "Tags" : [ {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } } ]
+      }
+    },
+
+    "WebSecurityGroup" : {
+     "Type" : "AWS::EC2::SecurityGroup",
+     "Properties" :
+     {
+      "GroupDescription" : "Enable HTTP and HTTPS access",
+      "SecurityGroupIngress" : [
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+        },
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "443",
+          "ToPort" : "443",
+          "CidrIp" : "0.0.0.0/0"
+        },
+        {
+          "IpProtocol" : "tcp",
+          "FromPort" : "4443",
+          "ToPort" : "4443",
+          "CidrIp" : "0.0.0.0/0"
+        }
+      ],
+      "VpcId" : { "Ref" : "mainVPC" }
+     }
+    },
+    "PublicSSHSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" :
+      {
+        "GroupDescription" : "Enable SSH access via port 22 to known CIDR",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : { "Ref": "TrustedCidr" }
+          }
+        ],
+        "VpcId" : { "Ref" : "mainVPC" }
+      }
+    },
+    "LocalTrafficSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" :
+      {
+        "GroupDescription" : "Enable access to local ips",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.10.0.0/16"
+          }
+        ],
+        "VpcId" : { "Ref" : "mainVPC" }
+      }
+    },
+    "BoshSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" :
+      {
+        "GroupDescription" : "Enable access to CF boxes",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "4222",
+            "ToPort" : "4222",
+            "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "6868",
+            "ToPort" : "6868",
+            "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "53",
+            "ToPort" : "53",
+            "CidrIp" : "10.10.0.0/16"
+          }
+        ],
+        "VpcId" : { "Ref" : "mainVPC" }
+      }
+    },
+    "BoshSecurityGroupIngressTCP" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "BoshSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "ToPort" : "65535",
+        "FromPort" : "0",
+        "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+      },
+      "DependsOn" : "BoshSecurityGroup"
+    },
+    "BoshSecurityGroupIngressUDP" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "BoshSecurityGroup" },
+        "IpProtocol" : "udp",
+        "ToPort" : "65535",
+        "FromPort" : "0",
+        "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+      },
+      "DependsOn" : "BoshSecurityGroup"
+    },
+    "BoshSecurityGroupIngressICMP" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "BoshSecurityGroup" },
+        "IpProtocol" : "icmp",
+        "ToPort" : "-1",
+        "FromPort" : "-1",
+        "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+      },
+      "DependsOn" : "BoshSecurityGroup"
+    },
+
+    "PublicSubnetA" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1b",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.100.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Public" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "PublicSubnetB" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1d",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.101.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Public" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "PrivateSubnetA" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1b",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.1.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "PrivateSubnetB" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1d",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.2.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Public" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "AttachGateway" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "Properties" : {
+         "VpcId" : { "Ref" : "mainVPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+    },
+
+    "PublicRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "mainVPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    },
+
+    "PublicRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociationA" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnetA" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociationB" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnetB" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PrivateRouteTableA" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "mainVPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" }
+        ]
+      }
+    },
+
+    "PrivateRouteA" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTableA" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "NATa" }
+      }
+    },
+
+    "PrivateRouteTableB" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "mainVPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" }
+        ]
+      }
+    },
+
+    "PrivateRouteB" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTableB" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "NATb" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociationA" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetA" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableA" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociationB" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetB" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
+      }
+    },
+
+
+    "NATa" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : "t2.micro",
+        "KeyName" : { "Ref" : "KeyName" },
+        "SourceDestCheck" : "false",
+        "ImageId" : "ami-4c9e4b24",
+        "NetworkInterfaces" : [
+          {
+            "AssociatePublicIpAddress" : true,
+            "DeleteOnTermination" : true,
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "PublicSubnetA"
+            },
+            "GroupSet": [
+              { "Ref" : "LocalTrafficSecurityGroup" },
+              { "Ref" : "PublicSSHSecurityGroup" }
+            ]
+          }
+        ],
+        "Tags" : [
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } },
+          {"Key" : "Name", "Value" : { "Fn::Join" : ["-", [
+            "cfn",
+            { "Ref": "DescriptionTag" },
+            "nat"
+          ]]}}
+        ]
+      }
+    },
+
+    "NATb" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : "t2.micro",
+        "KeyName" : { "Ref" : "KeyName" },
+        "SourceDestCheck" : "false",
+        "ImageId" : "ami-4c9e4b24",
+        "NetworkInterfaces" : [
+          {
+            "AssociatePublicIpAddress" : true,
+            "DeleteOnTermination" : true,
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "PublicSubnetB"
+            },
+            "GroupSet": [
+              { "Ref" : "LocalTrafficSecurityGroup" },
+              { "Ref" : "PublicSSHSecurityGroup" }
+            ]
+          }
+        ],
+        "Tags" : [
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } },
+          {"Key" : "Name", "Value" : { "Fn::Join" : ["-", [
+            "cfn",
+            { "Ref": "DescriptionTag" },
+            "nat"
+          ]]}}
+        ]
+      }
+    },
+
+    "Jumpbox" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : "t2.small",
+        "KeyName" : { "Ref" : "KeyName" },
+        "SourceDestCheck" : "false",
+        "ImageId" : "ami-e4324e8c",
+        "NetworkInterfaces" : [
+          {
+            "AssociatePublicIpAddress" : true,
+            "DeleteOnTermination" : true,
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "PublicSubnetB"
+            },
+            "GroupSet": [
+              { "Ref" : "BoshSecurityGroup" },
+              { "Ref" : "PublicSSHSecurityGroup" }
+            ]
+          }
+        ],
+        "Tags" : [
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } },
+          {"Key" : "Name", "Value" : { "Fn::Join" : ["-", [
+            "cfn",
+            { "Ref": "DescriptionTag" },
+            "jumpbox"
+          ]]}}
+        ]
+      }
+    },
+
+    "ELB" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "WebSecurityGroup" } ],
+        "Subnets" : [
+          { "Ref" : "PrivateSubnetA" },
+          { "Ref" : "PrivateSubnetB" }
+        ],
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : "80",
+          "Protocol" : "HTTP"
+        },
+        {
+          "LoadBalancerPort" : "443",
+          "InstancePort" : "80",
+          "Protocol" : "HTTPS",
+          "InstanceProtocol" : "HTTP",
+          "SSLCertificateId" : { "Fn::Join" : ["", [
+            "arn:aws:iam::",
+            { "Ref" : "AWS::AccountId" },
+            ":server-certificate/star-18f-us"
+            ]]
+          }
+        }
+        ],
+        "Policies" : [
+        {
+          "PolicyName" : "18FSSLNegotiationPolicy",
+          "PolicyType" : "SSLNegotiationPolicyType",
+          "Attributes" : [
+            { "Name" : "Protocol-TLSv1", "Value" : "true" },
+            { "Name" : "Protocol-TLSv1.1", "Value" : "true" },
+            { "Name" : "Protocol-TLSv1.2", "Value" : "true" },
+            { "Name" : "Protocol-SSLv2", "Value" : "false" },
+            { "Name" : "Protocol-SSLv3", "Value" : "false" },
+            { "Name" : "Server-Defined-Cipher-Order", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-GCM-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-GCM-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-GCM-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-GCM-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-SHA", "Value" : "true" },
+            { "Name" : "AES128-GCM-SHA256", "Value" : "false" },
+            { "Name" : "AES128-SHA256", "Value" : "false" },
+            { "Name" : "AES128-SHA", "Value" : "false" },
+            { "Name" : "AES256-GCM-SHA384", "Value" : "false" },
+            { "Name" : "AES256-SHA256", "Value" : "false" },
+            { "Name" : "AES256-SHA", "Value" : "false" },
+            { "Name" : "DHE-RSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "DHE-DSS-AES128-SHA", "Value" : "true" },
+            { "Name" : "CAMELLIA128-SHA", "Value" : "false" },
+            { "Name" : "EDH-RSA-DES-CBC3-SHA", "Value" : "false" },
+            { "Name" : "DES-CBC3-SHA", "Value" : "false" },
+            { "Name" : "ECDHE-RSA-RC4-SHA", "Value" : "true" },
+            { "Name" : "RC4-SHA", "Value" : "true" }
+          ],
+          "LoadBalancerPorts" : ["443"]
+        }],
+        "HealthCheck": {
+           "HealthyThreshold" : "2",
+           "Interval" : "5",
+           "Target" : "HTTP:80/",
+           "Timeout" : "4",
+           "UnhealthyThreshold" : "3"
+        }
+      }
+    },
+
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "VPC Subnets",
+        "SubnetIds": [
+          { "Ref": "PrivateSubnetA" },
+          { "Ref": "PrivateSubnetB" }
+        ],
+        "Tags" : [ {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } } ]
+      }
+    },
+
+    "RDS": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "Engine" : "Postgres",
+        "DBName" : { "Ref": "DBName" },
+        "MultiAZ" : "true",
+        "MasterUsername": { "Ref": "DBUsername" },
+        "MasterUserPassword": { "Ref" : "DBPassword" },
+        "DBInstanceClass": "db.t2.medium",
+        "AllocatedStorage": { "Ref" : "DBAllocatedStorage" },
+        "DBSubnetGroupName": { "Ref" : "DBSubnetGroup" },
+        "VPCSecurityGroups": [
+          { "Ref" : "BoshSecurityGroup" }
+        ],
+        "Tags" : [ {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } } ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "WebsiteURL" : {
+      "Value" : { "Fn::GetAtt" : [ "ELB", "DNSName" ]},
+      "Description" : "URL for the app"
+    },
+    "RDSUrl" : {
+      "Value" : { "Fn::GetAtt" : [ "RDS", "Endpoint.Address" ]},
+      "Description" : "RDS Endpoint"
+    },
+    "BoshSecGroup" : {
+      "Value" : { "Fn::GetAtt" : [ "BoshSecurityGroup", "GroupId" ]},
+      "Description" : "Bosh Group ID"
+    },
+    "SubnetA" : {
+      "Value" : { "Ref" : "PrivateSubnetA" },
+      "Description" : "SubnetA ID"
+    },
+    "SubnetB" : {
+      "Value" : { "Ref" : "PrivateSubnetB" },
+      "Description" : "SubnetB ID"
+    },
+    "Jumpbox" : {
+      "Value" : { "Fn::GetAtt" : [ "Jumpbox", "PublicIp" ]},
+      "Description" : "Jumpbox public Ip"
+    }
+  }
+}
