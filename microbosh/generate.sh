@@ -3,4 +3,4 @@
 spiff merge \
   main.yml \
   secrets.yml \
-  > microbosh-manifest.yml
+  > manifest.yml

@@ -21,7 +21,7 @@ cloud:
       access_key_id: (( merge ))
       secret_access_key: (( merge ))
       default_key_name: bosh
-      default_security_groups: ["bosh"]
+      default_security_groups: (( merge ))
       region: us-east-1
       ec2_private_key: bosh.pem
 
