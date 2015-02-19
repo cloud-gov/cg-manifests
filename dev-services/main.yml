@@ -9,6 +9,7 @@ meta:
   security_groups: (( merge ))
   uaa_endpoint: (( merge ))
   services_password: (( merge ))
+  subnet_id: (( merge ))
 
 releases:
   - name: cf-services-contrib
@@ -28,13 +29,11 @@ update:
   max_in_flight: 4
 
 networks:
-  - name: floating
-    type: vip
-    cloud_properties: {}
   - name: default
     type: dynamic
     cloud_properties:
       security_groups: (( meta.security_groups ))
+      subnet: (( meta.subnet_id ))
 
 resource_pools:
   - name: gateway
