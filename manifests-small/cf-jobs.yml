@@ -158,6 +158,30 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
+  - name: login_uaa_hm9000_z1
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: medium_z1
+    networks:
+      - name: cf1
+    properties:
+      networks: (( meta.networks.z1 ))
+      metron_agent:
+        zone: z1
+    update: (( merge || empty_hash ))
+
+  - name: login_uaa_hm9000_z2
+    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: medium_z2
+    networks:
+      - name: cf2
+    properties:
+      networks: (( meta.networks.z2 ))
+      metron_agent:
+        zone: z2
+    update: (( merge || empty_hash ))
+
   - name: api_z1
     templates: (( merge || meta.api_templates meta.api_worker_templates meta.metron_agent_templates ))
     instances: 1
@@ -256,10 +280,10 @@ jobs:
         zone: z2
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_hm9000_log_controller_z1
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.loggregator_trafficcontroller_templates meta.metron_agent_templates ))
+  - name: loggregator_controller_z1
+    templates: (( merge || meta.loggregator_trafficcontroller_templates ))
     instances: 1
-    resource_pool: medium_z1
+    resource_pool: small_z1
     networks:
       - name: cf1
     properties:
@@ -270,10 +294,10 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_hm9000_log_controller_z2
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.loggregator_trafficcontroller_templates meta.metron_agent_templates ))
-    instances: 1
-    resource_pool: medium_z2
+  - name: loggregator_controller_z2
+    templates: (( merge || meta.loggregator_trafficcontroller_templates ))
+    instances: 0
+    resource_pool: small_z2
     networks:
       - name: cf2
     properties:
