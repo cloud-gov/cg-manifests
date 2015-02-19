@@ -1,0 +1,131 @@
+---
+name: cf-dev-services
+director_uuid: (( merge ))
+
+meta:
+  postgres:
+    service_token: (( merge ))
+    root_password: (( merge ))
+  security_groups: (( merge ))
+  uaa_endpoint: (( merge ))
+  services_password: (( merge ))
+
+releases:
+  - name: cf-services-contrib
+    version: latest
+
+compilation:
+  workers: 3
+  network: default
+  reuse_compilation_vms: true
+  cloud_properties:
+    instance_type: m1.small
+
+update:
+  canaries: 1
+  canary_watch_time: 30000-60000
+  update_watch_time: 30000-60000
+  max_in_flight: 4
+
+networks:
+  - name: floating
+    type: vip
+    cloud_properties: {}
+  - name: default
+    type: dynamic
+    cloud_properties:
+      security_groups: (( meta.security_groups ))
+
+resource_pools:
+  - name: gateway
+    network: default
+    size: 2
+    stemcell:
+      name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: t2.small # CHANGE
+  - name: common
+    network: default
+    size: 1
+    stemcell:
+      name: bosh-aws-xen-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: m1.medium # CHANGE
+
+jobs:
+  - name: gateways
+    release: cf-services-contrib
+    template:
+    - postgresql_gateway_ng
+    instances: 1
+    resource_pool: gateway
+    networks:
+      - name: default
+        default: [dns, gateway]
+    properties:
+      # Service credentials
+      uaa_client_id: "cf"
+      uaa_endpoint: (( meta.uaa_endpoint ))
+      uaa_client_auth_credentials:
+        username: services
+        password: (( meta.services_password ))
+
+  - name: postgresql_service_node
+    release: cf-services-contrib
+    template: postgresql_node_ng
+    instances: 1
+    resource_pool: common
+    persistent_disk: 10000
+    properties:
+      postgresql_node:
+        plan: default
+    networks:
+      - name: default
+        default: [dns, gateway]
+
+properties:
+  networks:
+    apps: default
+    management: default
+
+  cc:
+    srv_api_uri: (( merge ))
+
+  nats: (( merge ))
+  service_plans:
+    postgresql:
+      default:
+        description: "Developer, 250MB storage, 10 connections"
+        free: true
+        job_management:
+          high_water: 230
+          low_water: 20
+        configuration:
+          capacity: 125
+          max_clients: 10
+          quota_files: 4
+          quota_data_size: 240
+          enable_journaling: true
+          backup:
+            enable: false
+          lifecycle:
+            enable: false
+            serialization: enable
+            snapshot:
+              quota: 1
+
+
+  postgresql_gateway:
+    token: (( meta.postgres.service_token ))
+    default_plan: default
+    supported_versions: ["9.3"]
+    version_aliases:
+      current: "9.3"
+    cc_api_version: v2
+  postgresql_node:
+    supported_versions: ["9.3"]
+    default_version: "9.3"
+    max_tmp: 900
+    password: (( meta.postgres.root_password ))
