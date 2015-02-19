@@ -270,6 +270,34 @@
       }
     },
 
+    "PrivateSubnetC" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1b",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.3.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "PrivateSubnetD" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1d",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.4.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
     "InternetGateway" : {
       "Type" : "AWS::EC2::InternetGateway",
       "Properties" : {
@@ -499,7 +527,7 @@
           "SSLCertificateId" : { "Fn::Join" : ["", [
             "arn:aws:iam::",
             { "Ref" : "AWS::AccountId" },
-            ":server-certificate/star-18f-us"
+            ":server-certificate/star-cf-18f-us"
             ]]
           }
         },
@@ -511,7 +539,7 @@
           "SSLCertificateId" : { "Fn::Join" : ["", [
             "arn:aws:iam::",
             { "Ref" : "AWS::AccountId" },
-            ":server-certificate/star-18f-us"
+            ":server-certificate/star-cf-18f-us"
             ]]
           }
         }
