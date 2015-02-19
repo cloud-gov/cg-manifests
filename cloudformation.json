@@ -169,6 +169,12 @@
             "FromPort" : "53",
             "ToPort" : "53",
             "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "10.10.0.0/16"
           }
         ],
         "VpcId" : { "Ref" : "mainVPC" }
@@ -477,8 +483,8 @@
       "Properties" : {
         "SecurityGroups" : [ { "Ref" : "WebSecurityGroup" } ],
         "Subnets" : [
-          { "Ref" : "PrivateSubnetA" },
-          { "Ref" : "PrivateSubnetB" }
+          { "Ref" : "PublicSubnetA" },
+          { "Ref" : "PublicSubnetB" }
         ],
         "Listeners" : [ {
           "LoadBalancerPort" : "80",
@@ -496,7 +502,20 @@
             ":server-certificate/star-18f-us"
             ]]
           }
+        },
+        {
+          "LoadBalancerPort" : "4443",
+          "InstancePort" : "80",
+          "Protocol" : "SSL",
+          "InstanceProtocol" : "TCP",
+          "SSLCertificateId" : { "Fn::Join" : ["", [
+            "arn:aws:iam::",
+            { "Ref" : "AWS::AccountId" },
+            ":server-certificate/star-18f-us"
+            ]]
+          }
         }
+
         ],
         "Policies" : [
         {
@@ -540,7 +559,7 @@
         "HealthCheck": {
            "HealthyThreshold" : "2",
            "Interval" : "5",
-           "Target" : "HTTP:80/",
+           "Target" : "TCP:80",
            "Timeout" : "4",
            "UnhealthyThreshold" : "3"
         }
