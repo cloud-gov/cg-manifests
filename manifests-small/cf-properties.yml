@@ -36,6 +36,7 @@ properties:
     shared_secret: (( merge ))
 
   collector:
+    deployment_name: (( meta.environment ))
     use_datadog: true
     datadog:
       api_key: (( merge ))
