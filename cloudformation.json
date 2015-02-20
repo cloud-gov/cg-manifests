@@ -409,6 +409,22 @@
       }
     },
 
+    "PrivateSubnetRouteTableAssociationC" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetC" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableA" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociationD" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetD" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
+      }
+    },
+
 
     "NATa" : {
       "Type" : "AWS::EC2::Instance",
