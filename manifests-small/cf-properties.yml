@@ -35,6 +35,12 @@ properties:
   loggregator_endpoint:
     shared_secret: (( merge ))
 
+  collector:
+    use_datadog: true
+    datadog:
+      api_key: (( merge ))
+      application_key: (( merge ))
+
   cc:
     jobs:
       global:
