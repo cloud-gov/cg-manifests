@@ -229,6 +229,8 @@ properties:
 
     no_ssl: false
 
+    require_https: true
+
     scim:
       userids_enabled: (( merge || true ))
       users: (( merge ))
@@ -254,7 +256,8 @@ properties:
       username: (( merge ))
       password: (( merge ))
 
-    login: ~
+    login:
+      protocol: 'https'
 
     ldap: ~
 
