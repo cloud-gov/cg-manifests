@@ -43,6 +43,7 @@ properties:
       fog_connection: (( meta.fog_config ))
 
   uaa:
+    port: 8081
     catalina_opts: -Xmx768m -XX:MaxPermSize=256m
 
   login:
