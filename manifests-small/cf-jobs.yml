@@ -158,10 +158,10 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_hm9000_z1
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+  - name: uaa_z1
+    templates: (( merge || meta.uaa_templates meta.metron_agent_templates ))
     instances: 1
-    resource_pool: medium_z1
+    resource_pool: small_z1
     networks:
       - name: cf1
     properties:
@@ -170,10 +170,34 @@ jobs:
         zone: z1
     update: (( merge || empty_hash ))
 
-  - name: login_uaa_hm9000_z2
-    templates: (( merge || meta.uaa_templates meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+  - name: uaa_z2
+    templates: (( merge || meta.uaa_templates meta.metron_agent_templates ))
     instances: 1
-    resource_pool: medium_z2
+    resource_pool: small_z2
+    networks:
+      - name: cf2
+    properties:
+      networks: (( meta.networks.z2 ))
+      metron_agent:
+        zone: z2
+    update: (( merge || empty_hash ))
+
+  - name: login_hm9000_z1
+    templates: (( merge || meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z1
+    networks:
+      - name: cf1
+    properties:
+      networks: (( meta.networks.z1 ))
+      metron_agent:
+        zone: z1
+    update: (( merge || empty_hash ))
+
+  - name: login_hm9000_z2
+    templates: (( merge || meta.login_templates meta.hm9000_templates meta.metron_agent_templates ))
+    instances: 1
+    resource_pool: small_z2
     networks:
       - name: cf2
     properties:
