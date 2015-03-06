@@ -594,9 +594,7 @@
             { "Name" : "DHE-DSS-AES128-SHA", "Value" : "true" },
             { "Name" : "CAMELLIA128-SHA", "Value" : "false" },
             { "Name" : "EDH-RSA-DES-CBC3-SHA", "Value" : "false" },
-            { "Name" : "DES-CBC3-SHA", "Value" : "false" },
-            { "Name" : "ECDHE-RSA-RC4-SHA", "Value" : "true" },
-            { "Name" : "RC4-SHA", "Value" : "true" }
+            { "Name" : "DES-CBC3-SHA", "Value" : "true" }
           ],
           "LoadBalancerPorts" : ["443"]
         }],
