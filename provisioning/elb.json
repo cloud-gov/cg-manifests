@@ -1,0 +1,172 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation for Cloud Foundry",
+
+  "Parameters" : {
+
+    "ClientTag": {
+      "Description" : "Client Tag",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+    "CertName" : {
+      "Description" : "IAM SSL Certificate Name",
+      "Default" : "star-cf-18f-us",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+    "ELBSubnets" : {
+      "Description" : "ELB Subnets",
+      "Type" : "List<AWS::EC2::Subnet::Id>"
+    },
+    "ELBSecGroups" : {
+      "Description" : "ELB SecurityGroups",
+      "Type" : "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "HostedZoneName" : {
+      "Description" : "Hosted Zone Name",
+      "Default" : "18f.us.",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+    "ZoneName" : {
+      "Description" : "Subdomain",
+      "Default" : "test",
+      "Type": "String",
+      "MinLength": "0",
+      "MaxLength": "255",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    }
+
+
+  },
+
+  "Resources" : {
+    "ELB" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : { "Ref" : "ELBSecGroups" },
+        "Subnets" : { "Ref" : "ELBSubnets" },
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : "80",
+          "Protocol" : "HTTP"
+        },
+        {
+          "LoadBalancerPort" : "443",
+          "InstancePort" : "80",
+          "Protocol" : "HTTPS",
+          "InstanceProtocol" : "HTTP",
+          "SSLCertificateId" : { "Fn::Join" : ["", [
+            "arn:aws:iam::",
+            { "Ref" : "AWS::AccountId" },
+            ":server-certificate/",
+            { "Ref" : "CertName" }
+            ]]
+          }
+        },
+        {
+          "LoadBalancerPort" : "4443",
+          "InstancePort" : "80",
+          "Protocol" : "SSL",
+          "InstanceProtocol" : "TCP",
+          "SSLCertificateId" : { "Fn::Join" : ["", [
+            "arn:aws:iam::",
+            { "Ref" : "AWS::AccountId" },
+            ":server-certificate/",
+            { "Ref" : "CertName" }
+            ]]
+          }
+        }
+
+        ],
+        "Policies" : [
+        {
+          "PolicyName" : "18FSSLNegotiationPolicy",
+          "PolicyType" : "SSLNegotiationPolicyType",
+          "Attributes" : [
+            { "Name" : "Protocol-TLSv1", "Value" : "true" },
+            { "Name" : "Protocol-TLSv1.1", "Value" : "true" },
+            { "Name" : "Protocol-TLSv1.2", "Value" : "true" },
+            { "Name" : "Protocol-SSLv2", "Value" : "false" },
+            { "Name" : "Protocol-SSLv3", "Value" : "false" },
+            { "Name" : "Server-Defined-Cipher-Order", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-GCM-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-GCM-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-SHA256", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-GCM-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-GCM-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-SHA384", "Value" : "true" },
+            { "Name" : "ECDHE-RSA-AES256-SHA", "Value" : "true" },
+            { "Name" : "ECDHE-ECDSA-AES256-SHA", "Value" : "true" },
+            { "Name" : "AES128-GCM-SHA256", "Value" : "false" },
+            { "Name" : "AES128-SHA256", "Value" : "false" },
+            { "Name" : "AES128-SHA", "Value" : "false" },
+            { "Name" : "AES256-GCM-SHA384", "Value" : "false" },
+            { "Name" : "AES256-SHA256", "Value" : "false" },
+            { "Name" : "AES256-SHA", "Value" : "false" },
+            { "Name" : "DHE-RSA-AES128-SHA", "Value" : "true" },
+            { "Name" : "DHE-DSS-AES128-SHA", "Value" : "true" },
+            { "Name" : "CAMELLIA128-SHA", "Value" : "false" },
+            { "Name" : "EDH-RSA-DES-CBC3-SHA", "Value" : "false" },
+            { "Name" : "DES-CBC3-SHA", "Value" : "true" }
+          ],
+          "LoadBalancerPorts" : ["443", "4443"]
+        }],
+        "HealthCheck": {
+           "HealthyThreshold" : "2",
+           "Interval" : "5",
+           "Target" : "TCP:80",
+           "Timeout" : "4",
+           "UnhealthyThreshold" : "3"
+        },
+        "Tags" : [ 
+          { "Key" : "Client", "Value" : { "Ref" : "ClientTag" } },
+          { "Key" : "CFStack", "Value" : "cf-chili" }
+        ]
+      }
+    },
+    "DNSRecord" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Ref" : "HostedZoneName" },
+        "Comment" : "A record for ELB created by Cloudformation",
+        "Name" : { "Fn::Join" : [".", [
+            { "Ref" : "ZoneName" },
+            { "Ref" : "HostedZoneName" } ]
+          ]
+        },
+        "Type": "A",
+        "AliasTarget" : {
+          "DNSName" : { "Fn::GetAtt": [ "ELB", "DNSName" ] },
+          "EvaluateTargetHealth" : true,
+          "HostedZoneId" : { "Fn::GetAtt": [ "ELB", "CanonicalHostedZoneNameID" ] }
+        }
+      }
+    }
+
+
+  },
+
+  "Outputs" : {
+    "ELBName" : {
+      "Value" : { "Ref" : "ELB" },
+      "Description" : "ELB Name"
+    }
+  }
+}
