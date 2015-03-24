@@ -38,18 +38,7 @@
       "MaxLength": "255",
       "AllowedPattern" : "[\\x20-\\x7E]*",
       "ConstraintDescription" : "can contain only ASCII characters."
-    },
-    "ZoneName" : {
-      "Description" : "Subdomain",
-      "Default" : "test",
-      "Type": "String",
-      "MinLength": "0",
-      "MaxLength": "255",
-      "AllowedPattern" : "[\\x20-\\x7E]*",
-      "ConstraintDescription" : "can contain only ASCII characters."
     }
-
-
   },
 
   "Resources" : {
@@ -147,7 +136,6 @@
         "HostedZoneName" : { "Ref" : "HostedZoneName" },
         "Comment" : "A record for ELB created by Cloudformation",
         "Name" : { "Fn::Join" : [".", [
-            { "Ref" : "ZoneName" },
             { "Ref" : "HostedZoneName" } ]
           ]
         },
