@@ -141,6 +141,18 @@
             "FromPort" : "0",
             "ToPort" : "65535",
             "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "-1",
+            "ToPort" : "-1",
+            "CidrIp" : "10.10.0.0/16"
           }
         ],
         "VpcId" : { "Ref" : "mainVPC" }
