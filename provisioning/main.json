@@ -310,6 +310,34 @@
       }
     },
 
+    "PrivateSubnetRDSA" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1b",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.20.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
+    "PrivateSubnetRDSB" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "us-east-1d",
+        "VpcId" : { "Ref" : "mainVPC" },
+        "CidrBlock" : "10.10.21.0/24",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackName"} },
+          {"Key" : "Network", "Value" : "Private" },
+          {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } }
+        ]
+      }
+    },
+
     "InternetGateway" : {
       "Type" : "AWS::EC2::InternetGateway",
       "Properties" : {
@@ -433,6 +461,22 @@
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
         "SubnetId" : { "Ref" : "PrivateSubnetD" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociationRDSA" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetRDSA" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTableA" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociationRDSB" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnetRDSB" },
         "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
       }
     },
@@ -627,6 +671,18 @@
         "SubnetIds": [
           { "Ref": "PrivateSubnetA" },
           { "Ref": "PrivateSubnetB" }
+        ],
+        "Tags" : [ {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } } ]
+      }
+    },
+
+    "DBSubnetGroup2": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "VPC Subnets",
+        "SubnetIds": [
+          { "Ref": "PrivateSubnetRDSA" },
+          { "Ref": "PrivateSubnetRDSB" }
         ],
         "Tags" : [ {"Key" : "Description", "Value" : { "Ref": "DescriptionTag" } } ]
       }
