@@ -646,8 +646,8 @@
             { "Name" : "AES256-GCM-SHA384", "Value" : "false" },
             { "Name" : "AES256-SHA256", "Value" : "false" },
             { "Name" : "AES256-SHA", "Value" : "false" },
-            { "Name" : "DHE-RSA-AES128-SHA", "Value" : "true" },
-            { "Name" : "DHE-DSS-AES128-SHA", "Value" : "true" },
+            { "Name" : "DHE-RSA-AES128-SHA", "Value" : "false" },
+            { "Name" : "DHE-DSS-AES128-SHA", "Value" : "false" },
             { "Name" : "CAMELLIA128-SHA", "Value" : "false" },
             { "Name" : "EDH-RSA-DES-CBC3-SHA", "Value" : "false" },
             { "Name" : "DES-CBC3-SHA", "Value" : "true" }
