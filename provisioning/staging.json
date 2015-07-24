@@ -634,7 +634,7 @@
         "MasterUserPassword": { "Ref" : "DBPassword" },
         "DBInstanceClass": "db.t2.micro",
         "AllocatedStorage": { "Ref" : "DBAllocatedStorage" },
-        "DBSubnetGroupName": { "Ref" : "DBSubnetGroup" },
+        "DBSubnetGroupName": { "Ref" : "DBSubnetGroup2" },
         "VPCSecurityGroups": [
           { "Ref" : "BoshSecurityGroup" }
         ],
