@@ -2,3 +2,4 @@
 manifest.yml
 cf-secrets.yml
 secrets.yml
+cf-secrets-staging.yml
