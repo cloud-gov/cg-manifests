@@ -1,0 +1,152 @@
+---
+meta: (( merge ))
+name: (( merge ))
+director_uuid: (( merge ))
+releases:
+ - name: docker
+   version: latest
+
+compilation:
+  workers: 1
+  network: (( meta.networks.[0].name ))
+  reuse_compilation_vms: true
+  cloud_properties:
+    instance_type: (( meta.vms.compilation ))
+
+update:
+  canaries: 0
+  canary_watch_time: 30000-240000
+  update_watch_time:  30000-240000
+  max_in_flight: 32
+  serial: false
+
+networks: (( merge ))
+
+resource_pools:
+  - name: docker-a
+    network: (( meta.networks.[0].name ))
+    stemcell:
+      name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: (( meta.vms.docker ))
+      ephemeral_disk:
+        size: 16384
+        type: gp2
+
+  - name: docker-b
+    network: (( meta.networks.[1].name ))
+    stemcell:
+      name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: (( meta.vms.docker ))
+      ephemeral_disk:
+        size: 16384
+        type: gp2
+
+  - name: broker
+    network: (( meta.networks.[0].name ))
+    stemcell:
+      name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: (( meta.vms.broker ))
+      ephemeral_disk:
+        size: 2048
+        type: gp2
+
+  - name: errand
+    network: (( meta.networks.[0].name ))
+    stemcell:
+      name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties:
+      instance_type: (( meta.vms.other ))
+      ephemeral_disk:
+        size: 2048
+        type: gp2
+
+jobs:
+  - name: broker
+    templates:
+      - name: cf-containers-broker
+      - name: swarm_manager
+    instances: 1
+    resource_pool: broker
+    networks:
+      - name: (( meta.networks.[0].name ))
+        default: [dns, gateway]
+
+  - name: docker
+    templates:
+      - name: docker
+    instances: 1
+    resource_pool: docker-a
+    persistent_disk: 65536
+    networks:
+      - name: (( meta.networks.[0].name ))
+        default: [dns, gateway]
+
+  - name: broker-registrar
+    template: broker-registrar
+    instances: 1
+    resource_pool: errand
+    lifecycle: errand
+    networks:
+      - name: (( meta.networks.[0].name ))
+        default: [dns, gateway]
+
+  - name: fetch-containers
+    template: fetch-containers
+    instances: 1
+    resource_pool: errand
+    lifecycle: errand
+    networks:
+      - name: (( meta.networks.[0].name ))
+
+  - name: broker-deregistrar
+    template: broker-deregistrar
+    instances: 1
+    resource_pool: errand
+    lifecycle: errand
+    networks:
+      - name: (( meta.networks.[0].name ))
+        default: [dns, gateway]
+
+properties:
+  docker:
+    tcp_address: 0.0.0.0
+
+  swarm_manager:
+    docker_nodes:
+      - (( merge ))
+
+  nats:
+    user: (( merge ))
+    password: (( merge ))
+    port: (( merge ))
+    machines:
+      - (( merge ))
+      - (( merge ))
+  cf:
+    api_url: (( merge ))
+    admin_username: (( merge ))
+    admin_password: (( merge ))
+
+  fetch_containers:
+    docker_url: (( merge ))
+
+  broker:
+    name: (( merge ))
+    protocol: https
+    host: (( merge ))
+    port: 443
+    username: (( merge ))
+    password: (( merge ))
+    cookie_secret: (( merge ))
+    component_name: (( merge ))
+    max_containers: (( merge ))
+    allocate_docker_host_ports: true
+    docker_url: unix:///var/vcap/sys/run/swarm_manager/swarm_manager.sock
+    services: (( merge ))

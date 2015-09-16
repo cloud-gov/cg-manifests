@@ -1,0 +1,44 @@
+---
+meta: (( merge ))
+properties:
+  broker:
+    services:
+      - id: (( merge ))
+        name: 'redis28-PROJECT_NAME'
+        description: 'Redis 2.8 service for application development and testing'
+        bindable: true
+        tags:
+          - 'redis28'
+          - 'redis'
+          - 'key-value'
+        metadata:
+          displayName: 'Redis 2.8'
+          longDescription: 'A Redis 2.8 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: 'frodenas/redis'
+              tag: '2.8'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              password:
+                key: 'REDIS_PASSWORD'
+            description: 'Standard plan included with dedicated broker.'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Redis 2.8 server'
+                - 'Redis 2.8 running inside a Docker container'
