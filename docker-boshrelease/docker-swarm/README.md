@@ -10,9 +10,7 @@ This is a set of scripts to support quickly creating a swarm broker deployment.
 
 1. Create a copy of `secrets_example.yml`.
 
-
 		cp secrets_example.yml secrets.yml
-
 
 1. Customize `secrets.yml` to suite your environment by updating the **Deployment Meta** and **General Cloud Foundry Environment Secrets** sections. The **Deployment Specific** section will be generated from the supplied **Deployment Meta** information.
 
@@ -20,20 +18,31 @@ This is a set of scripts to support quickly creating a swarm broker deployment.
 
 1. Generate unique secret keys for the deployment with `randomize.sh`.
 
-
 		randomize -s secrets.yml
-
 
 1. Generate the final manifest with `generate.sh`.
 
-
-		generate.sh -s secrets.yml > cf-docker-swarm-broker-PROJECT.yml
-
+		generate.sh -s secrets.yml -p plans.yml > cf-docker-swarm-broker-PROJECT.yml
 
 1. Deploy.
 
-
 		bosh deploy cf-docker-swarm-broker-PROJECT.yml
+
+1. Print strings to create or update the broker.
+
+		generate.sh -s secrets_example.yml -p plans.yml -b
+
+		Create a broker:
+
+		cf create-service-broker \
+		  DEPLOYMENT_NAME containers-EZCWFZKv 2IYCgKMrZzHfjh9ZfnCl7hHbo9lR1RIfxOoI4F0jbZcJLq5v \
+		  https://DEPLOYMENT_NAME.ENVIRONMENT_DOMAIN
+
+		Update a broker:
+
+		cf update-service-broker \
+		  DEPLOYMENT_NAME containers-EZCWFZKv 2IYCgKMrZzHfjh9ZfnCl7hHbo9lR1RIfxOoI4F0jbZcJLq5v \
+		  https://DEPLOYMENT_NAME.ENVIRONMENT_DOMAIN
 
 ## Todo
 
