@@ -83,20 +83,27 @@ echo "Strings found:" $RANDOM_STRING_COUNT
 echo "Short Strings found:" $RANDOM_SHORT_STRING_COUNT
 echo "GUIDs found:" $RANDOM_GUID_COUNT
 
-for i in `seq 1 $RANDOM_STRING_COUNT`; do
-  random_string "LONG"
-  echo "Replacing with: $RANDOM_STRING"
-  replace_in_place "RANDOM_STRING" "$RANDOM_STRING" "$SECRETS"
-done
+# Should probably have a function to DRY this out.
+if [ $RANDOM_STRING_COUNT -gt 0 ]; then
+  for i in `seq 1 $RANDOM_STRING_COUNT`; do
+    random_string "LONG"
+    echo "Replacing with: $RANDOM_STRING"
+    replace_in_place "RANDOM_STRING" "$RANDOM_STRING" "$SECRETS"
+  done
+fi
 
-for i in `seq 1 $RANDOM_GUID_COUNT`; do
-  random_guid
-  echo "Replacing with: $RANDOM_GUID"
-  replace_in_place "RANDOM_GUID" "$RANDOM_GUID" "$SECRETS"
-done
+if [ $RANDOM_GUID_COUNT -gt 0 ]; then
+  for i in `seq 1 $RANDOM_GUID_COUNT`; do
+    random_guid
+    echo "Replacing with: $RANDOM_GUID"
+    replace_in_place "RANDOM_GUID" "$RANDOM_GUID" "$SECRETS"
+  done
+fi
 
-for i in `seq 1 $RANDOM_SHORT_STRING_COUNT`; do
-  random_string "SHORT"
-  echo "Replacing with: $RANDOM_STRING"
-  replace_in_place "RANDOM_SHORT_STRING" "$RANDOM_STRING" "$SECRETS"
-done
+if [ $RANDOM_SHORT_STRING_COUNT -gt 0 ]; then
+  for i in `seq 1 $RANDOM_SHORT_STRING_COUNT`; do
+    random_string "SHORT"
+    echo "Replacing with: $RANDOM_STRING"
+    replace_in_place "RANDOM_SHORT_STRING" "$RANDOM_STRING" "$SECRETS"
+  done
+fi

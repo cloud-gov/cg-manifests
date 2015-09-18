@@ -4,6 +4,50 @@ properties:
   broker:
     services:
       - id: (( merge ))
+        name: 'elk-PROJECT_NAME'
+        description: 'Elasticsearch, Logstash and Kibana'
+        bindable: true
+        tags:
+          - 'elk'
+        metadata:
+          displayName: 'ELK'
+          longDescription: 'A Elasticsearch 1.5 service for development and testing running inside a Docker container'
+          providerDisplayName: '18F'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: '18fgsa/elk-docker'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'ES_USERNAME'
+                value: es
+              password:
+                key: 'ES_PASSWORD'
+              uri:
+                prefix: 'http'
+                port: '5601/tcp'
+            description: 'Standard plan with dedicated broker'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Elasticsearch 1.5 server'
+                - 'Elasticsearch 1.5 running inside a Docker container'
+
+      - id: (( merge ))
         name: 'redis28-PROJECT_NAME'
         description: 'Redis 2.8 service for application development and testing'
         bindable: true
@@ -42,3 +86,51 @@ properties:
               bullets:
                 - 'Dedicated Redis 2.8 server'
                 - 'Redis 2.8 running inside a Docker container'
+
+      - id: (( merge ))
+        name: 'mongodb26-PROJECT_NAME'
+        description: 'MongoDB 2.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'mongodb26'
+          - 'mongodb'
+          - 'document'
+        metadata:
+          displayName: 'MongoDB 2.6'
+          longDescription: 'A MongoDB 2.6 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: 'frodenas/mongodb'
+              tag: '2.6'
+              command: '--smallfiles --httpinterface'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'MONGODB_USERNAME'
+              password:
+                key: 'MONGODB_PASSWORD'
+              dbname:
+                key: 'MONGODB_DBNAME'
+              uri:
+                prefix: 'mongodb'
+                port: '27017/tcp'
+            description: 'Standard plan with dedicated broker'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated 2.6 MongoDB server'
+                - 'MongoDB 2.6 running inside a Docker container'
