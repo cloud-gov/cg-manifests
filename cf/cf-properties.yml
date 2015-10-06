@@ -81,10 +81,7 @@ properties:
     audit_events:
       cutoff_age_in_days: 31
 
-    billing_event_writing_enabled: true
-
     users_can_select_backend: true
-    diego_docker: false
     default_to_diego_backend: false
     allow_app_ssh_access: true
     default_app_memory: 512
@@ -209,16 +206,15 @@ properties:
     analytics:
       code: ~
       domain: ~
-    url: ~
-    catalina_opts: (( merge ))
+    url: (( "https://login." domain ))
     uaa_certificate: ~
     protocol: https
     brand: oss
     asset_base_url: ~
     uaa_base: ~
-    self_service_links_enabled: ~
-    signups_enabled: ~
-    invitations_enabled: ~
+    self_service_links_enabled: true
+    signups_enabled: true
+    invitations_enabled: true
     spring_profiles: ~
     messages: ~
 
@@ -233,21 +229,24 @@ properties:
 
     links:
       home: (( "https://console." domain ))
-      passwd: (( "https://console." domain "/password_resets/new" ))
-      signup: (( "https://console." domain "/register" ))
+      passwd: (( "https://login." domain "/forgot_password" ))
+      signup: (( "https://login." domain "/create_account" ))
       network: ~
       signup-network: ~
 
     logout: ~
 
-    tiles: ~
+    tiles:
+    - name: console
+      login-link: (( "https://console." domain ))
+      image: https://18f-cloud-gov.s3.amazonaws.com/deck.jpg
+      image-hover: https://18f-cloud-gov.s3.amazonaws.com/deck.jpg
 
     saml: ~
 
     restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
 
   uaa:
-    catalina_opts: (( merge ))
 
     port: (( merge || 8080 ))
 
@@ -323,6 +322,21 @@ properties:
     restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
 
     zones: (( merge || nil ))
+
+    authentication:
+      policy:
+        lockoutAfterFailures: 5
+        countFailuresWithinSeconds: 3600
+        lockoutPeriodSeconds: 300
+
+    password:
+      policy:
+        minLength: 20
+        requireUpperCaseCharacter: 1
+        requireLowerCaseCharacter: 1
+        requireDigit: 1
+        requireSpecialCharacter: 1
+        expirePasswordInMonths: 6
 
   metron_agent:
     deployment: (( meta.environment ))

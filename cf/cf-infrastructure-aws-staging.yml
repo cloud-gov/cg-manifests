@@ -39,10 +39,6 @@ properties:
 
   uaa:
     port: 8081
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
-
-  login:
-    catalina_opts: -Xmx768m -XX:MaxPermSize=256m
 
   dea_next:
     deny_networks:
@@ -185,6 +181,9 @@ jobs:
   - name: uaa_z2
     instances: 0
 
+  - name: api_z1
+    instances: 1
+
   - name: router_z1
     instances: 1
     networks:
@@ -241,12 +240,12 @@ jobs:
     networks:
       - name: cf2
 
-  - name: loggregator_trafficcontroller_z1
+  - name: loggregator_controller_z1
     instances: 1
     networks:
       - name: cf1
 
-  - name: loggregator_trafficcontroller_z2
+  - name: loggregator_controller_z2
     instances: 0
     networks:
       - name: cf2
