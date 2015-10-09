@@ -1,0 +1,65 @@
+meta:
+  subdomain: "admin"
+  admin_ui_uaa_client:
+    id: "admin-ui"
+    secret: MN5FSjpEauWjOBpkroOUpYvoY99p3RqJ
+  network: default
+
+director_uuid: 325c5db3-7e16-4cb8-ac64-821141a2c8d5
+compilation:
+  cloud_properties:
+    availability_zone: us-east-1b
+    disk: 20000
+    instance_type: c3.large
+    persistent_disk: 20000
+  network: default
+  reuse_compilation_vms: true
+  workers: 3
+
+update:
+  canaries: 1
+  canary_watch_time: 30000-600000
+  max_in_flight: 1
+  serial: true
+  update_watch_time: 5000-600000
+
+networks:
+- cloud_properties:
+    security_groups: CloudFoundry-live-BoshSecurityGroup-18GEOG04AYPFY
+    subnet: subnet-3c8a3665
+  name: default
+  type: dynamic
+
+resource_pools:
+- cloud_properties:
+    instance_type: t2.small
+  name: small_z1
+  network: default
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3149
+
+properties:
+  cc:
+    srv_api_uri: https://api.cloud.gov
+  system_domain: cloud.gov
+  uaa:
+    url: https://uaa.cloud.gov
+    admin:
+      client_secret: MN5FSjpEauWjOBpkroOUpYvoY99p3RqJ
+  admin_ui:
+    admins:
+    - diego.lapiduz@gsa.gov
+    - admin
+
+  nats:
+    user: nats
+    password: nats
+    address: 10.10.1.66
+    port: 4222
+  databases: 
+    db_scheme: postgres
+    address: cr1e7ct1v0y34g8.ch0moygcdwsl.us-east-1.rds.amazonaws.com
+    port: 5432
+    roles:
+      tag: admin

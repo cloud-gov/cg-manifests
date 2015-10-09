@@ -1,0 +1,1547 @@
+compilation:
+  cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: c3.large
+  network: cf1
+  reuse_compilation_vms: true
+  workers: 3
+director_uuid: dc4ebbfa-d187-4b04-a6a2-a9d3027b9656
+jobs:
+- instances: 0
+  name: consul_z1
+  networks:
+  - name: cf1
+    static_ips: []
+  persistent_disk: 1024
+  properties:
+    consul:
+      agent:
+        mode: server
+    metron_agent:
+      zone: z1
+  resource_pool: medium_z1
+  templates:
+  - name: consul_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update:
+    max_in_flight: 1
+    serial: true
+- instances: 0
+  name: consul_z2
+  networks:
+  - name: cf2
+    static_ips: []
+  persistent_disk: 1024
+  properties:
+    consul:
+      agent:
+        mode: server
+    metron_agent:
+      zone: z2
+  resource_pool: medium_z2
+  templates:
+  - name: consul_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update:
+    max_in_flight: 1
+    serial: true
+- instances: 1
+  name: nats_z1
+  networks:
+  - name: cf1
+    static_ips:
+    - 10.9.1.66
+  properties:
+    metron_agent:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: nats
+    release: cf
+  - name: nats_stream_forwarder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: nats_z2
+  networks:
+  - name: cf2
+    static_ips: []
+  properties:
+    metron_agent:
+      zone: z2
+  resource_pool: small_z2
+  templates:
+  - name: nats
+    release: cf
+  - name: nats_stream_forwarder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: etcd_z1
+  networks:
+  - name: cf1
+    static_ips:
+    - 10.9.1.75
+  persistent_disk: 10024
+  properties:
+    metron_agent:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: etcd
+    release: cf
+  - name: etcd_metrics_server
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: etcd_z2
+  networks:
+  - name: cf2
+    static_ips: []
+  persistent_disk: 10024
+  properties:
+    metron_agent:
+      zone: z2
+  resource_pool: small_z2
+  templates:
+  - name: etcd
+    release: cf
+  - name: etcd_metrics_server
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: nfs_z1
+  networks:
+  - name: cf1
+    static_ips: null
+  persistent_disk: 102400
+  properties:
+    metron_agent:
+      zone: z1
+  resource_pool: medium_z1
+  templates:
+  - name: debian_nfs_server
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: uaa_z1
+  networks:
+  - name: cf1
+  properties:
+    consul:
+      agent:
+        services:
+          uaa: {}
+    metron_agent:
+      zone: z1
+    route_registrar:
+      routes:
+      - name: uaa
+        port: 8081
+        uris:
+        - uaa.green.18f.gov
+        - '*.uaa.green.18f.gov'
+        - login.green.18f.gov
+        - '*.login.green.18f.gov'
+    uaa:
+      proxy:
+        servers:
+        - 10.9.1.70
+  resource_pool: medium_z1
+  templates:
+  - name: uaa
+    release: 18f-cf
+  - name: consul_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: uaa_z2
+  networks:
+  - name: cf2
+  properties:
+    consul:
+      agent:
+        services:
+          uaa: {}
+    metron_agent:
+      zone: z2
+    route_registrar:
+      routes:
+      - name: uaa
+        port: 8081
+        uris:
+        - uaa.green.18f.gov
+        - '*.uaa.green.18f.gov'
+        - login.green.18f.gov
+        - '*.login.green.18f.gov'
+    uaa:
+      proxy:
+        servers:
+        - 10.9.1.70
+  resource_pool: medium_z2
+  templates:
+  - name: uaa
+    release: 18f-cf
+  - name: consul_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: statsd-injector
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: stats_z1
+  networks:
+  - name: cf1
+  properties:
+    metron_agent:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: collector
+    release: 18f-cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: hm9000_z1
+  networks:
+  - name: cf1
+  properties:
+    metron_agent:
+      zone: z1
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        uris:
+        - hm9000.green.18f.gov
+  resource_pool: small_z1
+  templates:
+  - name: hm9000
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: hm9000_z2
+  networks:
+  - name: cf2
+  properties:
+    metron_agent:
+      zone: z2
+    route_registrar:
+      routes:
+      - name: hm9000
+        port: 5155
+        uris:
+        - hm9000.green.18f.gov
+  resource_pool: small_z2
+  templates:
+  - name: hm9000
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: api_z1
+  networks:
+  - name: cf1
+  properties:
+    consul:
+      agent:
+        services:
+          cloud_controller_ng: {}
+          routing-api: {}
+    metron_agent:
+      zone: z1
+    nfs_server:
+      address: null
+      allow_from_entries:
+      - 10.9.1.100/26
+      - 10.9.2.100/26
+      share: null
+      share_path: ""
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        uris:
+        - api.green.18f.gov
+  resource_pool: large_z1
+  templates:
+  - name: cloud_controller_ng
+    release: cf
+  - name: routing-api
+    release: cf
+  - name: statsd-injector
+    release: cf
+  - name: consul_agent
+    release: cf
+  - name: nfs_mounter
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: cloud_controller_worker
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: api_z2
+  networks:
+  - name: cf2
+  properties:
+    consul:
+      agent:
+        services:
+          cloud_controller_ng: {}
+          routing-api: {}
+    metron_agent:
+      zone: z2
+    nfs_server:
+      address: null
+      allow_from_entries:
+      - 10.9.1.100/26
+      - 10.9.2.100/26
+      share: null
+      share_path: ""
+    route_registrar:
+      routes:
+      - name: api
+        port: 9022
+        uris:
+        - api.green.18f.gov
+  resource_pool: large_z2
+  templates:
+  - name: cloud_controller_ng
+    release: cf
+  - name: routing-api
+    release: cf
+  - name: statsd-injector
+    release: cf
+  - name: consul_agent
+    release: cf
+  - name: nfs_mounter
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: cloud_controller_worker
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: clock_global
+  networks:
+  - name: cf1
+  persistent_disk: 0
+  properties:
+    metron_agent:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: cloud_controller_clock
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: runner_z1
+  networks:
+  - name: cf1
+    static_ips: null
+  persistent_disk: 30000
+  properties:
+    dea_next:
+      zone: z1
+    metron_agent:
+      zone: z1
+  resource_pool: runner_z1
+  templates:
+  - name: dea_next
+    release: cf
+  - name: dea_logging_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update:
+    max_in_flight: 1
+- instances: 0
+  name: runner_z2
+  networks:
+  - name: cf2
+    static_ips: null
+  persistent_disk: 30000
+  properties:
+    dea_next:
+      zone: z2
+    metron_agent:
+      zone: z2
+  resource_pool: runner_z2
+  templates:
+  - name: dea_next
+    release: cf
+  - name: dea_logging_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update:
+    max_in_flight: 1
+- instances: 0
+  name: loggregator_z1
+  networks:
+  - name: cf1
+  properties:
+    doppler:
+      zone: z1
+    metron_agent:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: doppler
+    release: cf
+  - name: syslog_drain_binder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: loggregator_z2
+  networks:
+  - name: cf2
+  properties:
+    doppler:
+      zone: z2
+    metron_agent:
+      zone: z2
+  resource_pool: small_z2
+  templates:
+  - name: doppler
+    release: cf
+  - name: syslog_drain_binder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: doppler_z1
+  networks:
+  - name: cf1
+  properties:
+    doppler:
+      zone: z1
+    metron_agent:
+      zone: z1
+  resource_pool: medium_z1
+  templates:
+  - name: doppler
+    release: cf
+  - name: syslog_drain_binder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: doppler_z2
+  networks:
+  - name: cf2
+  properties:
+    doppler:
+      zone: z2
+    metron_agent:
+      zone: z2
+  resource_pool: medium_z2
+  templates:
+  - name: doppler
+    release: cf
+  - name: syslog_drain_binder
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: loggregator_trafficcontroller_z1
+  networks:
+  - name: cf1
+  properties:
+    metron_agent:
+      zone: z1
+    route_registrar:
+      routes:
+      - name: doppler
+        port: 8081
+        uris:
+        - doppler.green.18f.gov
+      - name: loggregator
+        port: 8080
+        uris:
+        - loggregator.green.18f.gov
+    traffic_controller:
+      zone: z1
+  resource_pool: small_z1
+  templates:
+  - name: loggregator_trafficcontroller
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: loggregator_trafficcontroller_z2
+  networks:
+  - name: cf2
+  properties:
+    metron_agent:
+      zone: z2
+    route_registrar:
+      routes:
+      - name: doppler
+        port: 8081
+        uris:
+        - doppler.green.18f.gov
+      - name: loggregator
+        port: 8080
+        uris:
+        - loggregator.green.18f.gov
+    traffic_controller:
+      zone: z2
+  resource_pool: small_z2
+  templates:
+  - name: loggregator_trafficcontroller
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: route_registrar
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 1
+  name: router_z1
+  networks:
+  - name: cf1
+    static_ips:
+    - 10.9.1.70
+  properties:
+    consul:
+      agent:
+        services:
+          gorouter: {}
+    metron_agent:
+      zone: z1
+  resource_pool: router_z1
+  templates:
+  - name: secureproxy
+    release: secureproxy
+  - name: gorouter
+    release: cf
+  - name: consul_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: router_z2
+  networks:
+  - name: cf2
+    static_ips: []
+  properties:
+    consul:
+      agent:
+        services:
+          gorouter: {}
+    metron_agent:
+      zone: z2
+  resource_pool: router_z2
+  templates:
+  - name: secureproxy
+    release: secureproxy
+  - name: gorouter
+    release: cf
+  - name: consul_agent
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: harden
+    release: fisma
+  - name: newrelic-monitor
+    release: newrelic
+  update: {}
+- instances: 0
+  name: routing_api_z1
+  networks:
+  - name: cf1
+    static_ips: []
+  properties:
+    consul:
+      agent:
+        services:
+          routing-api: {}
+    metron_agent:
+      zone: z1
+  resource_pool: medium_z1
+  templates:
+  - name: routing-api
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: consul_agent
+    release: cf
+  update: {}
+- instances: 0
+  name: routing_api_z2
+  networks:
+  - name: cf2
+    static_ips: []
+  properties:
+    consul:
+      agent:
+        services:
+          routing-api: {}
+    metron_agent:
+      zone: z2
+  resource_pool: medium_z2
+  templates:
+  - name: routing-api
+    release: cf
+  - name: metron_agent
+    release: cf
+  - name: consul_agent
+    release: cf
+  update: {}
+- instances: 1
+  lifecycle: errand
+  name: acceptance_tests
+  networks:
+  - name: cf1
+  resource_pool: small_errand
+  templates:
+  - name: acceptance-tests
+    release: cf
+- instances: 1
+  lifecycle: errand
+  name: smoke_tests
+  networks:
+  - name: cf1
+  properties: {}
+  resource_pool: small_errand
+  templates:
+  - name: smoke-tests
+    release: cf
+meta:
+  environment: cf
+  releases:
+  - name: cf
+    version: 218
+  - name: fisma
+    version: latest
+  - name: newrelic
+    version: latest
+  - name: 18f-cf
+    version: latest
+  - name: secureproxy
+    version: 7
+name: cf
+networks:
+- name: cf1
+  subnets:
+  - cloud_properties:
+      subnet: subnet-9b3291c2
+    range: 10.9.1.100/26
+    static:
+    - 10.9.1.65 - 10.9.1.100
+- name: cf2
+  subnets:
+  - cloud_properties:
+      subnet: subnet-1cdb1437
+    range: 10.9.2.100/26
+    static:
+    - 10.9.2.65 - 10.9.2.100
+properties:
+  acceptance_tests:
+    admin_password: admin
+    admin_user: admin
+    api: api.green.18f.gov
+    apps_domain: green.18f.gov
+    include_routing_api: true
+    nodes: 1
+    oauth_password: gorouter-secret
+    skip_ssl_validation: true
+    system_domain: green.18f.gov
+  app_domains:
+  - apps.cloud.gov
+  app_ssh: null
+  cc:
+    allow_app_ssh_access: true
+    allowed_cors_domains: []
+    app_events:
+      cutoff_age_in_days: 31
+    app_usage_events:
+      cutoff_age_in_days: 31
+    audit_events:
+      cutoff_age_in_days: 31
+    broker_client_default_async_poll_interval_seconds: 60
+    broker_client_max_async_poll_duration_minutes: 10080
+    broker_client_timeout_seconds: 70
+    buildpacks:
+      buildpack_directory_key: 18f-cf-chili-buildpacks
+      cdn: null
+      fog_connection:
+        aws_access_key_id: AKIAIEJHTE4VJB2UUR2A
+        aws_secret_access_key: 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
+        provider: AWS
+        region: us-east-1
+    bulk_api_password: pmCbssuBnT2a0In0pryA
+    client_max_body_size: 1536M
+    db_encryption_key: Ttz8gziWDLsnp9BZ4YwfSyOgNc
+    db_logging_level: info
+    default_app_disk_in_mb: 1024
+    default_app_memory: 512
+    default_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: buildpack_ruby
+    - name: nodejs_buildpack
+      package: buildpack_nodejs
+    - name: go_buildpack
+      package: buildpack_go
+    - name: python_buildpack
+      package: buildpack_python
+    - name: php_buildpack
+      package: buildpack_php
+    - name: binary_buildpack
+      package: buildpack_binary
+    default_health_check_timeout: 60
+    default_quota_definition: default
+    default_running_security_groups:
+    - public_networks
+    - dns
+    - trusted_local_networks
+    default_stack: cflinuxfs2
+    default_staging_security_groups:
+    - public_networks
+    - dns
+    - trusted_local_networks
+    default_to_diego_backend: false
+    development_mode: false
+    directories: null
+    disable_custom_buildpacks: false
+    droplets:
+      cdn: null
+      droplet_directory_key: 18f-cf-chili-droplets
+      fog_connection:
+        aws_access_key_id: AKIAIEJHTE4VJB2UUR2A
+        aws_secret_access_key: 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
+        provider: AWS
+        region: us-east-1
+    external_host: api
+    external_port: 9022
+    external_protocol: https
+    install_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: buildpack_ruby
+    - name: nodejs_buildpack
+      package: buildpack_nodejs
+    - name: go_buildpack
+      package: buildpack_go
+    - name: python_buildpack
+      package: buildpack_python
+    - name: php_buildpack
+      package: buildpack_php
+    - name: binary_buildpack
+      package: buildpack_binary
+    internal_api_password: pmCbssuBnT2a0In0pryA
+    internal_api_user: internal_user
+    jobs:
+      app_bits_packer:
+        timeout_in_seconds: null
+      app_events_cleanup:
+        timeout_in_seconds: null
+      app_usage_events_cleanup:
+        timeout_in_seconds: null
+      blobstore_delete:
+        timeout_in_seconds: null
+      blobstore_upload:
+        timeout_in_seconds: null
+      droplet_deletion:
+        timeout_in_seconds: null
+      droplet_upload:
+        timeout_in_seconds: null
+      generic:
+        number_of_workers: null
+      global:
+        timeout_in_seconds: 14400
+      model_deletion:
+        timeout_in_seconds: null
+    logging_level: info
+    maximum_app_disk_in_mb: 2048
+    maximum_health_check_timeout: 180
+    min_cli_version: null
+    min_recommended_cli_version: null
+    newrelic:
+      capture_params: true
+      developer_mode: false
+      environment_name: cf
+      license_key: 4c423038d1cafc47d39282d905951da538629f10
+      monitor_mode: true
+      transaction_tracer:
+        enabled: true
+        record_sql: obfuscated
+    packages:
+      app_package_directory_key: 18f.gov-cc-packages
+      cdn: null
+      fog_connection:
+        aws_access_key_id: AKIAIEJHTE4VJB2UUR2A
+        aws_secret_access_key: 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
+        provider: AWS
+        region: us-east-1
+      max_package_size: 1073741824
+    quota_definitions:
+      default:
+        memory_limit: 10240
+        non_basic_services_allowed: true
+        total_routes: 1000
+        total_services: 100
+    resource_pool:
+      cdn: null
+      fog_connection:
+        aws_access_key_id: AKIAIEJHTE4VJB2UUR2A
+        aws_secret_access_key: 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
+        provider: AWS
+        region: us-east-1
+      resource_directory_key: 18f.gov-cc-resources
+    security_group_definitions:
+    - name: public_networks
+      rules:
+      - destination: 0.0.0.0-9.255.255.255
+        protocol: all
+      - destination: 11.0.0.0-169.253.255.255
+        protocol: all
+      - destination: 169.255.0.0-172.15.255.255
+        protocol: all
+      - destination: 172.32.0.0-192.167.255.255
+        protocol: all
+      - destination: 192.169.0.0-255.255.255.255
+        protocol: all
+    - name: dns
+      rules:
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: tcp
+      - destination: 0.0.0.0/0
+        ports: "53"
+        protocol: udp
+    - name: trusted_local_networks
+      rules:
+      - destination: 10.9.20.0-10.9.21.255
+        protocol: all
+      - destination: 10.9.100.0-10.9.101.255
+        protocol: all
+    service_usage_events:
+      cutoff_age_in_days: 31
+    srv_api_uri: https://api.green.18f.gov
+    stacks:
+    - description: Ubuntu 10.04 on x86-64
+      name: lucid64
+    - description: Cloud Foundry Linux-based filesystem
+      name: cflinuxfs2
+    staging_upload_password: x98J43DJOoj3Y9zUxr
+    staging_upload_user: uploader
+    system_buildpacks:
+    - name: staticfile_buildpack
+      package: buildpack_staticfile
+    - name: java_buildpack
+      package: buildpack_java
+    - name: ruby_buildpack
+      package: buildpack_ruby
+    - name: nodejs_buildpack
+      package: buildpack_nodejs
+    - name: go_buildpack
+      package: buildpack_go
+    - name: python_buildpack
+      package: buildpack_python
+    - name: php_buildpack
+      package: buildpack_php
+    - name: binary_buildpack
+      package: buildpack_binary
+    thresholds:
+      api:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+      worker:
+        alert_if_above_mb: null
+        restart_if_above_mb: null
+        restart_if_consistently_above_mb: null
+    user_buildpacks: []
+    users_can_select_backend: true
+  ccdb:
+    address: cfdb.ch0moygcdwsl.us-east-1.rds.amazonaws.com
+    databases:
+    - name: ccdb
+      tag: cc
+    db_scheme: postgres
+    port: 5432
+    roles:
+    - name: cfdb
+      password: 8rO3BPUjDIVBI38Fpd
+      tag: db_user
+  collector:
+    deployment_name: cf
+    graphite:
+      address: 10.10.101.63
+      port: 2003
+    newrelic_insights:
+      api_key: Wio7rr1O64u5bcGYfno-jWcWSMUUzNQr
+      app_id: 907948
+    newrelic_plugin:
+      license_key: 4c423038d1cafc47d39282d905951da538629f10
+    use_graphite: true
+    use_newrelic_insights: true
+    use_newrelic_plugin: true
+  consul:
+    agent:
+      log_level: null
+      servers:
+        lan: []
+    agent_cert: ""
+    agent_key: ""
+    ca_cert: ""
+    encrypt_keys: []
+    require_ssl: false
+    server_cert: ""
+    server_key: ""
+  databases: null
+  dea_next:
+    advertise_interval_in_seconds: 5
+    allow_host_access: null
+    allow_networks:
+    - 10.9.1.2/32
+    - 10.9.2.2/32
+    - 10.9.3.0/24
+    - 10.9.4.0/24
+    default_health_check_timeout: 60
+    deny_networks:
+    - 169.254.0.0/16
+    - 10.9.1.0/16
+    directory_server_protocol: https
+    disk_mb: 15000
+    disk_overcommit_factor: 10
+    evacuation_bail_out_time_in_seconds: 600
+    heartbeat_interval_in_seconds: 10
+    instance_disk_inode_limit: 200000
+    kernel_network_tuning_enabled: true
+    logging_level: info
+    memory_mb: 4096
+    memory_overcommit_factor: 10
+    rlimit_core: 0
+    staging_disk_inode_limit: 200000
+    staging_disk_limit_mb: 4096
+    staging_memory_limit_mb: 2048
+  description: cloud.gov Cloud Foundry
+  disk_quota_enabled: true
+  domain: green.18f.gov
+  doppler:
+    blacklisted_syslog_ranges: null
+    debug: false
+    maxRetainedLogMessages: 100
+    unmarshaller_count: 5
+  doppler_endpoint:
+    shared_secret: Ou7RF2wS5RcrinIiWuizDloeN
+  dropsonde:
+    enabled: true
+  etcd:
+    machines:
+    - 10.9.1.75
+    peer_require_ssl: false
+    require_ssl: false
+  etcd_metrics_server:
+    nats:
+      machines:
+      - 10.9.1.66
+      password: nats
+      username: nats
+  hm9000:
+    url: https://hm9000.green.18f.gov
+  logger_endpoint:
+    port: 4443
+  loggregator:
+    blacklisted_syslog_ranges:
+    - end: 10.9.255.255
+      start: 10.9.0.0
+    debug: false
+    etcd:
+      machines:
+      - 10.9.1.75
+    maxRetainedLogMessages: 100
+    outgoing_dropsonde_port: 8081
+  loggregator_endpoint:
+    shared_secret: Ou7RF2wS5RcrinIiWuizDloeN
+  login:
+    analytics:
+      code: null
+      domain: null
+    asset_base_url: null
+    brand: oss
+    brand_title: cloud.gov
+    enabled: true
+    invitations_enabled: true
+    links:
+      home: https://console.green.18f.gov
+      network: null
+      passwd: https://login.green.18f.gov/forgot_password
+      signup: https://login.green.18f.gov/
+      signup-network: null
+    logout: null
+    messages: null
+    notifications:
+      url: null
+    protocol: https
+    restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
+    saml: null
+    self_service_links_enabled: true
+    signups_enabled: true
+    smtp:
+      host: smtp.mandrillapp.com
+      password: pSWhjVAM5KlY1PGrJ8ZSag
+      port: 587
+      user: devops@gsa.gov
+    spring_profiles: null
+    tiles:
+    - image: https://18f-cloud-gov.s3.amazonaws.com/deck.jpg
+      image-hover: https://18f-cloud-gov.s3.amazonaws.com/deck.jpg
+      login-link: https://console.green.18f.gov
+      name: console
+    uaa_base: null
+    uaa_certificate: null
+    url: https://login.green.18f.gov
+  metron_agent:
+    deployment: cf
+  metron_endpoint:
+    shared_secret: Ou7RF2wS5RcrinIiWuizDloeN
+  nats:
+    address: 10.9.1.66
+    debug: false
+    machines:
+    - 10.9.1.66
+    monitor_port: 0
+    password: nats
+    port: 4222
+    prof_port: 0
+    trace: false
+    user: nats
+  newrelic:
+    license_key: XXXX
+  nfs_server:
+    address: null
+    allow_from_entries:
+    - 10.9.1.100/26
+    - 10.9.2.100/26
+    share: null
+    share_path: ""
+  request_timeout_in_seconds: 900
+  router:
+    cipher_suites: null
+    enable_ssl: null
+    extra_headers_to_log: null
+    logrotate: null
+    port: 85
+    requested_route_registration_interval_in_seconds: 20
+    require_https: null
+    route_service_secrets: null
+    route_service_timeout: null
+    secure_cookies: false
+    ssl_cert: null
+    ssl_key: null
+    status:
+      password: NOllHcXfCB45G
+      user: router_user
+  secureproxy:
+    listen_port: 80
+    proxy_port: 85
+  smoke_tests:
+    api: api.green.18f.gov
+    apps_domain: green.18f.gov
+    ginkgo_opts: null
+    org: SMOKE_TEST_ORG
+    password: admin
+    skip_ssl_validation: true
+    space: SMOKE_TEST_SPACE
+    user: admin
+  ssl:
+    skip_cert_verify: true
+  support_address: https://docs.cloud.gov
+  syslog_daemon_config: null
+  system_domain: green.18f.gov
+  system_domain_organization: null
+  template_only:
+    aws:
+      access_key_id: AKIAIEJHTE4VJB2UUR2A
+      availability_zone: us-east-1b
+      availability_zone2: us-east-1d
+      secret_access_key: ZfpRDigQC3461Av8HnS/jA+7nGT5GDQ53yvMgE4v
+  traffic_controller:
+    outgoing_port: 8080
+  uaa:
+    admin:
+      client_secret: MN5FSjpEauWjOBpkroOUpYvoY99p3RqJ
+    authentication:
+      policy:
+        countFailuresWithinSeconds: 3600
+        lockoutAfterFailures: 5
+        lockoutPeriodSeconds: 300
+    cc:
+      client_secret: ZHlvUrj1SkRAv7gbRqpjTOJ60e
+    clients:
+      app-direct:
+        secret: 5DGzB0UNBXTqLRslbXPwbo1jQgRZQ6A
+      cc_routing:
+        authorities: routing.router_groups.read
+        authorized-grant-types: client_credentials
+        secret: aI3dsAHawu2YpFMjHRJEkBgMgfzx
+      cloud_controller_username_lookup:
+        authorities: scim.userids
+        authorized-grant-types: client_credentials
+        secret: aI3dsAHawu2YpFMjHRJEkBgMgfzx
+      developer_console:
+        secret: QKWftVfbtSt3rbH3nPsj23g7lkgSb
+      doppler:
+        authorities: uaa.resource
+        override: true
+        secret: P40wYvtr49WVheRudB1Pa6apBRIunTj
+      gorouter:
+        authorities: clients.read,clients.write,clients.admin,routing.routes.write,routing.routes.read
+        authorized-grant-types: client_credentials,refresh_token
+        scope: openid,cloud_controller_service_permissions.read
+        secret: aI3dsAHawu2YpFMjHRJEkBgMgfzx
+      login:
+        authorities: oauth.login,scim.write,clients.read,notifications.write,critical_notifications.write,emails.write,scim.userids,password.write
+        authorized-grant-types: authorization_code,client_credentials,refresh_token
+        override: true
+        redirect-uri: https://login.green.18f.gov
+        scope: openid,oauth.approvals
+        secret: o8MbxnWTpo7vsUwAlbdvn
+      notifications:
+        authorities: cloud_controller.admin,scim.read
+        authorized-grant-types: client_credentials
+        secret: yhbdZ7ioS0EloJVAWEgW9jZvO4N107d
+    database: null
+    issuer: https://uaa.green.18f.gov
+    jwt:
+      signing_key: |+
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEogIBAAKCAQEAuPRJxt0eLXpcF1KcEpk8tQ6g9JOeZjlTUvCtVeODDSCEQWYL
+        AX79jfn8sapKWu+uvcG7XpGVygNZ4rHaRGRUg8pMM4161kxkJ2rla4VbS2JRxAkU
+        7qr/7joJLoZwMNMbXXZWH1/DAnEV5wdMc51aN6BOpzXCn+axHGLCwqjJuunGN3Vo
+        RPzMbGxdS8BLlxpNZuLkw5Nkcwm5ntBRIajuotk+HoJGKdzY3DfNtPiGC+5kgMWO
+        4Qiqt6cP8wHzSyJpRD7xiJmqft6BwQjWL27yIiqwhvja5sTT97nT+AelOIDJ36yF
+        8SBwntxCP1Ro5I16MY0tmgBQIy/1snrlpAu9mQIDAQABAoIBADGTkb8TgEZSeSLr
+        StiVaLdjn3NPqnLeRN6DkwLlxDgdkjXxg1u4TYDkFH8PFXVAsAc/Sdk0jwEiWtKw
+        N8CDYEAfVsOu1dFhkqsaNTrX+TvAtAgnIwxCm+2gctucv6/mtnwb/0PTqHMcGvHd
+        e/m1oPwuJUce2vd/n9PrCSeilMhb8r+yb2n5IOgROsgs+DzibBpBmRL1gwajCdie
+        KuOhvYd1DtNraG+WrKq9cgh1VneQqQ84OPhCNLIcRpvhhdbaiXS3YjFCZEfOIoR9
+        ELeEX1x4EkZzG6ur+z/KHkr2G5dny+54UzC796AW7T1TuZy93ESeUvaZBzl+ntGX
+        GPn+Y00CgYEA4hBHOXaXm514Ck2siE/pq6OE0xgaZlnJhSJrr8EliO+1UhNIhmlN
+        2qzQpo6yjGwSol4HJ0ByiSpP7EGdFKvFStMa7yO/hV5I+1OliTd2PghYoeCs7ZiX
+        0Gwv57jUQN3NLLzU+wQAn+xjQoNArzxhJaHnxTFPmwbe/qxL6zkDCr8CgYEA0XJf
+        jcVlXgZfaDvTX85x45QZBLTdEGZedzSBYAVhaURoZTlfyT02Zrlnz9/hpIGafgnz
+        jIh7AwR84xMwpRVtSkmqU/aHFj7f9Um0injLJpn7WHt2K/T7HiiGpIwyjaVlYdmj
+        n/Q0UFqXO5EaOb6uZGjJVfm7tmZkV5hKmZSmBacCgYBoZlAeT5Bwg2Z+i6SURyOI
+        6rlaq5T1k52naGAHCNIGzX0VbGZf/J3B0XGCmgAHLZnldjsje3Xptqq2Vw7uDu3M
+        QnX73qyCMSrPNrAKEJ0AxOX5zELQb1odHPl6sDcFxekNMh/B1PVc5dRpUSg8RUww
+        Dvd0b/NtitzNDFD7TpcDDQKBgBhrZlqoLiZlRdBoUT+1WS/4f2Y+FBwqY08wrvjc
+        B7x3Pli29MUIvwQBD+p7ptpARhv12xCChR0X89uhzCUjN2fW6OX7M0rTr9bwbf1L
+        EhyBDX4GfwOm/3RHs1MSCX7cTtK2xk4K8eKAfWtzgoRDCCAq23aLtGgSzhYsal43
+        p5e3AoGAK69g1X9i4b49EbMdSkZEHA4geq6g4T4+myAPL7CFZulGmqY86aQV+/pD
+        2hd2/VovAA1eWwDChY8NRWhfolXdlwUQCYBQUw0UZ9Hh5NBzIfekeBYqJysk7z5R
+        e9A9S158IVyh8LyrVUS1Q6LX3S2Pi+32U9HyqoTmhqrceQaz5H0=
+        -----END RSA PRIVATE KEY-----
+      verification_key: |+
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuPRJxt0eLXpcF1KcEpk8
+        tQ6g9JOeZjlTUvCtVeODDSCEQWYLAX79jfn8sapKWu+uvcG7XpGVygNZ4rHaRGRU
+        g8pMM4161kxkJ2rla4VbS2JRxAkU7qr/7joJLoZwMNMbXXZWH1/DAnEV5wdMc51a
+        N6BOpzXCn+axHGLCwqjJuunGN3VoRPzMbGxdS8BLlxpNZuLkw5Nkcwm5ntBRIaju
+        otk+HoJGKdzY3DfNtPiGC+5kgMWO4Qiqt6cP8wHzSyJpRD7xiJmqft6BwQjWL27y
+        Iiqwhvja5sTT97nT+AelOIDJ36yF8SBwntxCP1Ro5I16MY0tmgBQIy/1snrlpAu9
+        mQIDAQAB
+        -----END PUBLIC KEY-----
+    ldap: null
+    login: null
+    newrelic: null
+    no_ssl: false
+    password:
+      policy:
+        expirePasswordInMonths: 6
+        minLength: 20
+        requireDigit: 1
+        requireLowerCaseCharacter: 1
+        requireSpecialCharacter: 1
+        requireUpperCaseCharacter: 1
+    port: 8081
+    restricted_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}
+    scim:
+      external_groups: null
+      userids_enabled: true
+      users:
+      - admin|iyoMLZh44ixjEe2vOBIJYe|scim.write,scim.read,openid,cloud_controller.admin,doppler.firehose
+      - services|oqzxWpnhZLxY9NxKVdBimd8fZ8|scim.write,scim.read,openid,cloud_controller.admin
+    spring_profiles: null
+    url: https://uaa.green.18f.gov
+    user: null
+    zones: null
+  uaadb:
+    address: cfdb.ch0moygcdwsl.us-east-1.rds.amazonaws.com
+    databases:
+    - name: uaadb
+      tag: uaa
+    db_scheme: postgresql
+    port: 5432
+    roles:
+    - name: cfdb
+      password: 8rO3BPUjDIVBI38Fpd
+      tag: db_user
+releases:
+- name: cf
+  version: 218
+- name: fisma
+  version: latest
+- name: newrelic
+  version: latest
+- name: 18f-cf
+  version: latest
+- name: secureproxy
+  version: 7
+resource_pools:
+- cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: t2.small
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: small_z1
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1d
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: t2.small
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: small_z2
+  network: cf2
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: t2.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: medium_z1
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1d
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: t2.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: medium_z2
+  network: cf2
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: m3.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: large_z1
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1d
+    ephemeral_disk:
+      encrypted: true
+      size: 30000
+      type: gp2
+    instance_type: m3.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: large_z2
+  network: cf2
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 65000
+      type: gp2
+    instance_type: m3.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: runner_z1
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1d
+    ephemeral_disk:
+      encrypted: true
+      size: 65000
+      type: gp2
+    instance_type: m3.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: runner_z2
+  network: cf2
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    elbs:
+    - cfrouter
+    ephemeral_disk:
+      encrypted: true
+      size: 65000
+      type: gp2
+    instance_type: t2.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: router_z1
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1d
+    elbs:
+    - cfrouter
+    ephemeral_disk:
+      encrypted: true
+      size: 65000
+      type: gp2
+    instance_type: t2.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: router_z2
+  network: cf2
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    ephemeral_disk:
+      encrypted: true
+      size: 10240
+      type: gp2
+    instance_type: t2.medium
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: small_errand
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+- cloud_properties:
+    availability_zone: us-east-1b
+    instance_type: c3.xlarge
+    key_name: bosh-foo
+  env:
+    bosh:
+      password: $6$aJ3zSiNRw$Nnva48li4YHb8gbbGShLd5aq.MH9Ig8vB0bb.AUYJ40fYKbOb3Y1R0Jj4nfXmBxETlAMCvaQ1Ms7NVDZ0zPIA0
+  name: xlarge_errand
+  network: cf1
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: 3147
+update:
+  canaries: 1
+  canary_watch_time: 30000-600000
+  max_in_flight: 1
+  serial: true
+  update_watch_time: 5000-600000
+
