@@ -32,6 +32,12 @@ meta:
     share: ~
     share_path: (( merge || "" ))
 
+  api_routes:
+  - name: api
+    port: (( .properties.cc.external_port ))
+    uris:
+    - (( "api." .properties.domain ))
+
   api_templates:
   - name: cloud_controller_ng
     release: (( meta.release.name ))
@@ -43,6 +49,9 @@ meta:
     release: (( meta.release.name ))
   - name: nfs_mounter
     release: (( meta.release.name ))
+  - name: route_registrar
+    release: (( meta.release.name ))
+
 
   api_worker_templates:
   - name: cloud_controller_worker
@@ -96,18 +105,37 @@ meta:
   - name: debian_nfs_server
     release: (( meta.release.name ))
 
+  uaa_routes:
+  - name: uaa
+    port: (( .properties.uaa.port ))
+    uris:
+    - (( "uaa." .properties.domain ))
+    - (( "*.uaa." .properties.domain ))
+    - (( "login." .properties.domain ))
+    - (( "*.login." .properties.domain ))
+
   uaa_templates:
   - name: uaa
     release: (( meta.release.name ))
   - name: consul_agent
+    release: (( meta.release.name ))
+  - name: route_registrar
     release: (( meta.release.name ))
 
   login_templates:
   - name: login
     release: (( meta.release.name ))
 
+  hm9000_routes:
+  - name: hm9000
+    port: 5155
+    uris:
+    - (( "hm9000." .properties.domain ))
+
   hm9000_templates:
   - name: hm9000
+    release: (( meta.release.name ))
+  - name: route_registrar
     release: (( meta.release.name ))
 
   consul_templates:
@@ -173,7 +201,6 @@ jobs:
       - name: cf1
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -186,7 +213,6 @@ jobs:
       - name: cf2
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
     update: (( merge || empty_hash ))
@@ -200,7 +226,6 @@ jobs:
       - name: cf1
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -214,7 +239,6 @@ jobs:
       - name: cf2
         static_ips: (( merge ))
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
     update: (( merge || empty_hash ))
@@ -243,9 +267,14 @@ jobs:
         agent:
           services:
             uaa: {}
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+      route_registrar:
+        routes: (( merge || meta.uaa_routes ))
+      router:
+        servers:
+          z1: (( jobs.router_z1.networks.cf1.static_ips ))
+          z2: (( jobs.router_z2.networks.cf2.static_ips ))
     update: (( merge || empty_hash ))
 
   - name: uaa_z2
@@ -259,9 +288,14 @@ jobs:
         agent:
           services:
             uaa: {}
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+      route_registrar:
+        routes: (( merge || meta.uaa_routes ))
+      router:
+        servers:
+          z1: (( jobs.router_z1.networks.cf1.static_ips ))
+          z2: (( jobs.router_z2.networks.cf2.static_ips ))
     update: (( merge || empty_hash ))
 
   - name: stats_z1
@@ -271,7 +305,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1  ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -283,9 +316,10 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+      route_registrar:
+        routes: (( merge || meta.hm9000_routes ))
     update: (( merge || empty_hash ))
 
   - name: hm9000_z2
@@ -295,9 +329,10 @@ jobs:
     networks:
       - name: cf2
     properties:
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+      route_registrar:
+        routes: (( merge || meta.hm9000_routes ))
     update: (( merge || empty_hash ))
 
   - name: api_z1
@@ -312,9 +347,10 @@ jobs:
           services:
             cloud_controller_ng: {}
             routing-api: {}
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
+      route_registrar:
+        routes: (( merge || meta.api_routes ))
       nfs_server: (( meta.nfs_server ))
     update: (( merge || empty_hash ))
 
@@ -330,9 +366,10 @@ jobs:
           services:
             cloud_controller_ng: {}
             routing-api: {}
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
+      route_registrar:
+        routes: (( merge || meta.api_routes ))
       nfs_server: (( meta.nfs_server ))
     update: (( merge || empty_hash ))
 
@@ -344,7 +381,6 @@ jobs:
     networks:
       - name: cf1
     properties:
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -359,7 +395,6 @@ jobs:
     properties:
       dea_next:
         zone: (( merge || "z1" ))
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
     persistent_disk: 30000
@@ -376,7 +411,6 @@ jobs:
     properties:
       dea_next:
         zone: (( merge || "z2" ))
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
     persistent_disk: 30000
@@ -391,7 +425,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
       doppler:
         zone: z1
     update: (( merge || empty_hash ))
@@ -404,7 +437,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
       doppler:
         zone: z2
     update: (( merge || empty_hash ))
@@ -417,7 +449,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
     update: (( merge || empty_hash ))
 
   - name: doppler_z2
@@ -428,7 +459,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
     update: (( merge || empty_hash ))
 
   - name: loggregator_controller_z1
@@ -439,7 +469,6 @@ jobs:
       - name: cf1
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
       traffic_controller:
@@ -454,7 +483,6 @@ jobs:
       - name: cf2
     properties:
       <<: (( merge ))
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
       traffic_controller:
@@ -473,7 +501,6 @@ jobs:
         agent:
           services:
             gorouter: {}
-      networks: (( meta.networks.z1 ))
       metron_agent:
         zone: z1
     update: (( merge || empty_hash ))
@@ -490,7 +517,6 @@ jobs:
         agent:
           services:
             gorouter: {}
-      networks: (( meta.networks.z2 ))
       metron_agent:
         zone: z2
     update: (( merge || empty_hash ))
@@ -509,7 +535,6 @@ jobs:
             routing-api: {}
       metron_agent:
         zone: z1
-      networks: (( meta.networks.z1 ))
     update: (( merge || empty_hash ))
 
   - name: routing_api_z2
@@ -526,7 +551,6 @@ jobs:
             routing-api: {}
       metron_agent:
         zone: z2
-      networks: (( meta.networks.z2 ))
     update: (( merge || empty_hash ))
 
   - name: acceptance_tests
@@ -548,16 +572,23 @@ jobs:
     lifecycle: errand
     networks:
       - name: cf1
-    properties:
-      networks: (( meta.networks.z1 ))
+    properties: {}
 
 properties:
   <<: (( merge ))
   consul:
-    log_level: (( merge || nil ))
     agent:
+      log_level: (( merge || nil ))
       servers:
         lan: (( consul_servers ))
+    ca_cert:
+    agent_cert:
+    agent_key:
+    encrypt_keys: (( merge || [] ))
+    require_ssl:
+    server_cert:
+    server_key:
+
 
   dropsonde:
     enabled: true
@@ -641,16 +672,24 @@ properties:
 
   router:
     enable_ssl: (( merge || nil ))
-    enable_routing_api: (( merge || nil ))
     ssl_cert: (( merge || nil ))
     ssl_key: (( merge || nil ))
     cipher_suites: (( merge || nil ))
     requested_route_registration_interval_in_seconds: 20
     port: 85
+    logrotate:
+      freq_min: 20
+      rotate: 5
+      size: 3M
+    require_https: ~
     status:
       user: (( merge ))
       password: (( merge ))
     secure_cookies: false
+    route_service_secrets: (( merge || nil ))
+    route_service_timeout: (( merge || nil ))
+    logrotate: (( merge || nil ))
+    extra_headers_to_log: (( merge || nil ))
 
   secureproxy:
     listen_port: 80
