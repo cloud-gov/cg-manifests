@@ -5,6 +5,8 @@ director_uuid: (( merge ))
 releases:
  - name: docker
    version: latest
+ - name: newrelic
+   version: latest
 
 compilation:
   workers: 1
@@ -27,7 +29,7 @@ resource_pools:
     network: (( meta.networks.[0].name ))
     stemcell:
       name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-      version: latest
+      version: (( meta.stemcells.docker-a ))
     cloud_properties:
       instance_type: (( meta.vms.docker ))
       ephemeral_disk:
@@ -38,7 +40,7 @@ resource_pools:
     network: (( meta.networks.[1].name ))
     stemcell:
       name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-      version: latest
+      version: (( meta.stemcells.docker-b ))
     cloud_properties:
       instance_type: (( meta.vms.docker ))
       ephemeral_disk:
@@ -49,7 +51,7 @@ resource_pools:
     network: (( meta.networks.[0].name ))
     stemcell:
       name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-      version: latest
+      version: (( meta.stemcells.broker ))
     cloud_properties:
       instance_type: (( meta.vms.broker ))
       ephemeral_disk:
@@ -60,7 +62,7 @@ resource_pools:
     network: (( meta.networks.[0].name ))
     stemcell:
       name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
-      version: latest
+      version: (( meta.stemcells.errand ))
     cloud_properties:
       instance_type: (( meta.vms.other ))
       ephemeral_disk:
@@ -71,7 +73,11 @@ jobs:
   - name: broker
     templates:
       - name: cf-containers-broker
+        release: docker
       - name: swarm_manager
+        release: docker
+      - name: newrelic-monitor
+        release: newrelic
     instances: 1
     resource_pool: broker
     networks:
@@ -81,6 +87,9 @@ jobs:
   - name: docker
     templates:
       - name: docker
+        release: docker
+      - name: newrelic-monitor
+        release: newrelic
     instances: 1
     resource_pool: docker-a
     persistent_disk: 65536
@@ -89,7 +98,9 @@ jobs:
         default: [dns, gateway]
 
   - name: broker-registrar
-    template: broker-registrar
+    templates:
+      - name: broker-registrar
+        release: docker
     instances: 1
     resource_pool: errand
     lifecycle: errand
@@ -98,7 +109,9 @@ jobs:
         default: [dns, gateway]
 
   - name: fetch-containers
-    template: fetch-containers
+    templates:
+      - name: broker-registrar
+        release: docker
     instances: 1
     resource_pool: errand
     lifecycle: errand
@@ -106,7 +119,9 @@ jobs:
       - name: (( meta.networks.[0].name ))
 
   - name: broker-deregistrar
-    template: broker-deregistrar
+    templates:
+      - name: broker-registrar
+        release: docker
     instances: 1
     resource_pool: errand
     lifecycle: errand
@@ -117,6 +132,10 @@ jobs:
 properties:
   docker:
     tcp_address: 0.0.0.0
+
+  newrelic:
+    license_key: (( merge ))
+    deployment_tag: (( merge ))
 
   swarm_manager:
     docker_nodes:
@@ -149,4 +168,6 @@ properties:
     max_containers: (( merge ))
     allocate_docker_host_ports: true
     docker_url: unix:///var/vcap/sys/run/swarm_manager/swarm_manager.sock
+    requires:
+      - syslog_drain
     services: (( merge ))
