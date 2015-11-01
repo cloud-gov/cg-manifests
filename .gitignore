@@ -1,5 +1,11 @@
-.DS_Store
+# YAML property files
 manifest.yml
 cf-secrets.yml
 secrets.yml
 cf-secrets-staging.yml
+
+# Mac files
+.DS_Store
+
+# Eclipse files
+.project
