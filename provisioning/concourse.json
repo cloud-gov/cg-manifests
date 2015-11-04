@@ -1,0 +1,125 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Infrastructure components for a Concourse deployment with an ELB.",
+  "Parameters": {
+    "HostedZoneName": {
+      "Description": "(Optional) Route53 Hosted Zone in which to register the ELB's DNS record.",
+      "Type": "String",
+      "Default": ""
+    },
+    "ELBRecordSetName": {
+      "Description": "(Optional) Route53 Record Set name for the ELB.",
+      "Type": "String",
+      "Default": ""
+    },
+    "LoadBalancerSubnet": {
+      "Description": "Subnet ID to use for the ELB.",
+      "Type": "String",
+      "Default": ""
+    },
+    "LoadBalancerCertName": {
+      "Description": "Name of the SSL cert to use for the ELB.",
+      "Type": "String",
+      "Default": ""
+    },
+    "WebSecurityGroup": {
+      "Description": "SecurityGroup to use for the ELB.",
+      "Type": "String",
+      "Default": ""
+    }
+  },
+  "Conditions": {
+    "CreateRecordSet": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            { "Fn::Equals": [{ "Ref": "HostedZoneName" }, ""] }
+          ]
+        },
+        {
+          "Fn::Not": [
+            { "Fn::Equals": [{ "Ref": "ELBRecordSetName" }, ""] }
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "ConcourseELBLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Subnets": [{ "Ref": "LoadBalancerSubnet" }],
+        "SecurityGroups": [{ "Ref": "WebSecurityGroup" }],
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Interval": "30",
+          "Target": "tcp:8080",
+          "Timeout": "5",
+          "UnhealthyThreshold": "10"
+        },
+        "Listeners": [
+          {
+            "Protocol": "tcp",
+            "LoadBalancerPort": "80",
+            "InstanceProtocol": "tcp",
+            "InstancePort": "8080"
+          },
+          {
+            "Protocol": "tcp",
+            "LoadBalancerPort": "2222",
+            "InstanceProtocol": "tcp",
+            "InstancePort": "2222"
+          },
+          {
+            "Protocol" : "ssl",
+            "LoadBalancerPort" : "443",
+            "InstanceProtocol": "tcp",
+            "InstancePort" : "8080",
+            "SSLCertificateId" : {
+              "Fn::Join":[
+                "",
+                [
+                  "arn:aws:iam::",
+                  {
+                    "Ref":"AWS::AccountId"
+                  },
+                  ":server-certificate/",
+                  {
+                    "Ref":"LoadBalancerCertName"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ConcourseELBRecordSet": {
+      "Type": "AWS::Route53::RecordSetGroup",
+      "Condition": "CreateRecordSet",
+      "Properties": {
+        "HostedZoneName": { "Ref": "HostedZoneName" },
+        "RecordSets": [
+          {
+            "Name": { "Ref": "ELBRecordSetName" },
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": {
+                "Fn::GetAtt": [
+                  "ConcourseELBLoadBalancer",
+                  "CanonicalHostedZoneNameID"
+                ]
+              },
+              "DNSName": {
+                "Fn::GetAtt": [
+                  "ConcourseELBLoadBalancer",
+                  "CanonicalHostedZoneName"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
