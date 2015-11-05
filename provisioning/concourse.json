@@ -2,6 +2,25 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Infrastructure components for a Concourse deployment with an ELB.",
   "Parameters": {
+    "ConcourseVPC": {
+      "Description": "VPC ID to use for the Concourse system.",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "ConcouresVPCInternetGateway": {
+      "Description": "VPC Internet Gateway ID for the Concourse VPC.",
+      "Type": "String",
+      "Default": ""
+    },
+    "ConcourseSubnetCIDR": {
+      "Description": "CIDR block for the Concourse subnet.",
+      "Type": "String",
+      "Default": "10.9.10.0/24"
+    },
+    "ConcourseSubnetAZ": {
+      "Description": "Availability Zone of the Concourse subnet.",
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Default": "us-east-1b"
+    },
     "HostedZoneName": {
       "Description": "(Optional) Route53 Hosted Zone in which to register the ELB's DNS record.",
       "Type": "String",
@@ -14,8 +33,7 @@
     },
     "LoadBalancerSubnet": {
       "Description": "Subnet ID to use for the ELB.",
-      "Type": "String",
-      "Default": ""
+      "Type": "AWS::EC2::Subnet::Id"
     },
     "LoadBalancerCertName": {
       "Description": "Name of the SSL cert to use for the ELB.",
@@ -24,8 +42,7 @@
     },
     "WebSecurityGroup": {
       "Description": "SecurityGroup to use for the ELB.",
-      "Type": "String",
-      "Default": ""
+      "Type": "AWS::EC2::SecurityGroup::Id"
     }
   },
   "Conditions": {
@@ -45,6 +62,34 @@
     }
   },
   "Resources": {
+    "ConcourseSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "ConcourseVPC" },
+        "AvailabilityZone" : { "Ref": "ConcourseSubnetAZ" },
+        "CidrBlock": { "Ref": "ConcourseSubnetCIDR" },
+        "Tags": [{ "Key": "Name", "Value": "Concourse" }]
+      }
+    },
+    "ConcourseRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": { "VpcId": { "Ref": "ConcourseVPC" } }
+    },
+    "ConcourseRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "ConcouresVPCInternetGateway" },
+        "RouteTableId": { "Ref": "ConcourseRouteTable" }
+      }
+    },
+    "ConcourseSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": { "Ref": "ConcourseRouteTable" },
+        "SubnetId": { "Ref": "ConcourseSubnet" }
+      }
+    },
     "ConcourseELBLoadBalancer": {
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties": {
