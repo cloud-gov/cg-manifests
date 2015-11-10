@@ -62,6 +62,7 @@ networks:
       - range: (( meta.network.range ))
         reserved: (( meta.network.reserved ))
         gateway: (( meta.network.gateway ))
+        dns: (( meta.network.dns ))
         static:
           - &discovery_static_ip (( meta.network.discovery_ip ))
         cloud_properties:
