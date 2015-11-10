@@ -158,6 +158,9 @@ resource_pools:
       availability_zone: *az
       instance_type: (( meta.resources.web.instance_type ))
       elbs: (( meta.resources.web.elbs ))
+      ephemeral_disk:
+        size: 30000
+        type: gp2
 
   - name: discovery
     network: concourse
@@ -165,6 +168,9 @@ resource_pools:
     cloud_properties:
       availability_zone: *az
       instance_type: (( meta.resources.discovery.instance_type ))
+      ephemeral_disk:
+        size: 30000
+        type: gp2
 
   - name: databases
     network: concourse
@@ -172,6 +178,9 @@ resource_pools:
     cloud_properties:
       availability_zone: *az
       instance_type: (( meta.resources.databases.instance_type ))
+      ephemeral_disk:
+        size: 30000
+        type: gp2
 
   - name: workers
     network: concourse
@@ -179,6 +188,9 @@ resource_pools:
     cloud_properties:
       availability_zone: *az
       instance_type: (( meta.resources.workers.instance_type ))
+      ephemeral_disk:
+        size: 30000
+        type: gp2
 
 compilation:
   workers: 3
