@@ -5,6 +5,7 @@ name: concourse
 meta:
   az: ~
   atc:
+    external_url: ~
     db:
       name: ~
       user: ~
@@ -12,6 +13,10 @@ meta:
     basic_auth:
       user: ~
       pass: ~
+    github_auth:
+      authorize: ~
+      client_id: ~
+      client_secret: ~
   network:
     range: ~
     reserved: ~
@@ -100,8 +105,13 @@ jobs:
     networks: [{name: concourse}]
     properties:
       atc:
+        external_url: (( meta.atc.external_url ))
         basic_auth_username: (( meta.atc.basic_auth.user ))
         basic_auth_password: (( meta.atc.basic_auth.pass ))
+        github_auth:
+          authorize: (( meta.atc.github_auth.authorize ))
+          client_id: (( meta.atc.github_auth.client_id ))
+          client_secret: (( meta.atc.github_auth.client_secret ))
         postgresql:
           database: *atc-db-name
           role: *atc-db-role
