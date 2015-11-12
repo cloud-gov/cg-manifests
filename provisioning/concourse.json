@@ -6,11 +6,6 @@
       "Description": "VPC ID to use for the Concourse system.",
       "Type": "AWS::EC2::VPC::Id"
     },
-    "ConcouresVPCInternetGateway": {
-      "Description": "VPC Internet Gateway ID for the Concourse VPC.",
-      "Type": "String",
-      "Default": ""
-    },
     "ConcourseSubnetCIDR": {
       "Description": "CIDR block for the Concourse subnet.",
       "Type": "String",
@@ -20,6 +15,11 @@
       "Description": "Availability Zone of the Concourse subnet.",
       "Type": "AWS::EC2::AvailabilityZone::Name",
       "Default": "us-east-1b"
+    },
+    "ConcourseRouteTable": {
+      "Description": "Route Table ID for the Concourse Subnet.",
+      "Type": "String",
+      "Default": ""
     },
     "HostedZoneName": {
       "Description": "(Optional) Route53 Hosted Zone in which to register the ELB's DNS record.",
@@ -69,18 +69,6 @@
         "AvailabilityZone" : { "Ref": "ConcourseSubnetAZ" },
         "CidrBlock": { "Ref": "ConcourseSubnetCIDR" },
         "Tags": [{ "Key": "Name", "Value": "Concourse" }]
-      }
-    },
-    "ConcourseRouteTable": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": { "VpcId": { "Ref": "ConcourseVPC" } }
-    },
-    "ConcourseRoute": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "GatewayId": { "Ref": "ConcouresVPCInternetGateway" },
-        "RouteTableId": { "Ref": "ConcourseRouteTable" }
       }
     },
     "ConcourseSubnetRouteTableAssociation": {
