@@ -95,7 +95,7 @@
             "Protocol": "tcp",
             "LoadBalancerPort": "80",
             "InstanceProtocol": "tcp",
-            "InstancePort": "8080"
+            "InstancePort": "80"
           },
           {
             "Protocol": "tcp",
@@ -107,7 +107,7 @@
             "Protocol" : "ssl",
             "LoadBalancerPort" : "443",
             "InstanceProtocol": "tcp",
-            "InstancePort" : "8080",
+            "InstancePort" : "80",
             "SSLCertificateId" : {
               "Fn::Join":[
                 "",
