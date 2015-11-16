@@ -105,6 +105,7 @@ jobs:
     networks: [{name: concourse}]
     properties:
       atc:
+        web_bind_port: 80
         external_url: (( meta.atc.external_url ))
         basic_auth_username: (( meta.atc.basic_auth.user ))
         basic_auth_password: (( meta.atc.basic_auth.pass ))
