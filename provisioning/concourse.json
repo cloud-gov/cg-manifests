@@ -62,6 +62,22 @@
     }
   },
   "Resources": {
+    "ConcourseSecurityGroup" : {
+     "Type": "AWS::EC2::SecurityGroup",
+     "Properties":
+     {
+      "GroupDescription": "Enable Auxillary HTTP access (needed for Concourse)",
+      "SecurityGroupIngress": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "CidrIp": "0.0.0.0/0"
+        }
+      ],
+      "VpcId": { "Ref" : "ConcourseVPC" }
+     }
+    },
     "ConcourseSubnet": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
@@ -95,7 +111,7 @@
             "Protocol": "tcp",
             "LoadBalancerPort": "80",
             "InstanceProtocol": "tcp",
-            "InstancePort": "80"
+            "InstancePort": "8080"
           },
           {
             "Protocol": "tcp",
@@ -107,7 +123,7 @@
             "Protocol" : "ssl",
             "LoadBalancerPort" : "443",
             "InstanceProtocol": "tcp",
-            "InstancePort" : "80",
+            "InstancePort" : "8080",
             "SSLCertificateId" : {
               "Fn::Join":[
                 "",
