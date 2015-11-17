@@ -1,0 +1,174 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Infrastructure components for a Concourse deployment with an ELB.",
+  "Parameters": {
+    "ConcourseVPC": {
+      "Description": "VPC ID to use for the Concourse system.",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "ConcourseSubnetCIDR": {
+      "Description": "CIDR block for the Concourse subnet.",
+      "Type": "String",
+      "Default": "10.9.10.0/24"
+    },
+    "ConcourseSubnetAZ": {
+      "Description": "Availability Zone of the Concourse subnet.",
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Default": "us-east-1b"
+    },
+    "ConcourseRouteTable": {
+      "Description": "Route Table ID for the Concourse Subnet.",
+      "Type": "String",
+      "Default": ""
+    },
+    "HostedZoneName": {
+      "Description": "(Optional) Route53 Hosted Zone in which to register the ELB's DNS record.",
+      "Type": "String",
+      "Default": ""
+    },
+    "ELBRecordSetName": {
+      "Description": "(Optional) Route53 Record Set name for the ELB.",
+      "Type": "String",
+      "Default": ""
+    },
+    "LoadBalancerSubnet": {
+      "Description": "Subnet ID to use for the ELB.",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "LoadBalancerCertName": {
+      "Description": "Name of the SSL cert to use for the ELB.",
+      "Type": "String",
+      "Default": ""
+    },
+    "WebSecurityGroup": {
+      "Description": "SecurityGroup to use for the ELB.",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    }
+  },
+  "Conditions": {
+    "CreateRecordSet": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            { "Fn::Equals": [{ "Ref": "HostedZoneName" }, ""] }
+          ]
+        },
+        {
+          "Fn::Not": [
+            { "Fn::Equals": [{ "Ref": "ELBRecordSetName" }, ""] }
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "ConcourseSecurityGroup" : {
+     "Type": "AWS::EC2::SecurityGroup",
+     "Properties":
+     {
+      "GroupDescription": "Enable Auxillary HTTP access (needed for Concourse)",
+      "SecurityGroupIngress": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "CidrIp": "0.0.0.0/0"
+        }
+      ],
+      "VpcId": { "Ref" : "ConcourseVPC" }
+     }
+    },
+    "ConcourseSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "ConcourseVPC" },
+        "AvailabilityZone" : { "Ref": "ConcourseSubnetAZ" },
+        "CidrBlock": { "Ref": "ConcourseSubnetCIDR" },
+        "Tags": [{ "Key": "Name", "Value": "Concourse" }]
+      }
+    },
+    "ConcourseSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": { "Ref": "ConcourseRouteTable" },
+        "SubnetId": { "Ref": "ConcourseSubnet" }
+      }
+    },
+    "ConcourseELBLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Subnets": [{ "Ref": "LoadBalancerSubnet" }],
+        "SecurityGroups": [{ "Ref": "WebSecurityGroup" }],
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Interval": "30",
+          "Target": "tcp:8080",
+          "Timeout": "5",
+          "UnhealthyThreshold": "10"
+        },
+        "Listeners": [
+          {
+            "Protocol": "tcp",
+            "LoadBalancerPort": "80",
+            "InstanceProtocol": "tcp",
+            "InstancePort": "8080"
+          },
+          {
+            "Protocol": "tcp",
+            "LoadBalancerPort": "2222",
+            "InstanceProtocol": "tcp",
+            "InstancePort": "2222"
+          },
+          {
+            "Protocol" : "ssl",
+            "LoadBalancerPort" : "443",
+            "InstanceProtocol": "tcp",
+            "InstancePort" : "8080",
+            "SSLCertificateId" : {
+              "Fn::Join":[
+                "",
+                [
+                  "arn:aws:iam::",
+                  {
+                    "Ref":"AWS::AccountId"
+                  },
+                  ":server-certificate/",
+                  {
+                    "Ref":"LoadBalancerCertName"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ConcourseELBRecordSet": {
+      "Type": "AWS::Route53::RecordSetGroup",
+      "Condition": "CreateRecordSet",
+      "Properties": {
+        "HostedZoneName": { "Ref": "HostedZoneName" },
+        "RecordSets": [
+          {
+            "Name": { "Ref": "ELBRecordSetName" },
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": {
+                "Fn::GetAtt": [
+                  "ConcourseELBLoadBalancer",
+                  "CanonicalHostedZoneNameID"
+                ]
+              },
+              "DNSName": {
+                "Fn::GetAtt": [
+                  "ConcourseELBLoadBalancer",
+                  "CanonicalHostedZoneName"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
