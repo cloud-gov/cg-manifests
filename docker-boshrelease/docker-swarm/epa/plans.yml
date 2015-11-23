@@ -4,6 +4,53 @@ properties:
   broker:
     services:
       - id: (( merge ))
+        name: 'elk-PROJECT_NAME'
+        description: 'Elasticsearch, Logstash and Kibana'
+        bindable: true
+        requires:
+          - syslog_drain
+        tags:
+          - 'elk'
+        metadata:
+          displayName: 'ELK'
+          longDescription: 'ELK stack for logging.'
+          providerDisplayName: '18F'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: '18fgsa/elk-docker'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'ES_USERNAME'
+                value: es
+              password:
+                key: 'ES_PASSWORD'
+              uri:
+                prefix: 'http'
+                port: '5601/tcp'
+            description: 'Standard plan with dedicated broker'
+            syslog_drain_port: '5000/tcp'
+            syslog_drain_protocol: 'syslog'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'ELK running inside a Docker container'
+
+      - id: (( merge ))
         name: 'mysql56-PROJECT_NAME'
         description: 'MySQL 5.6 service for application development and testing'
         bindable: true
