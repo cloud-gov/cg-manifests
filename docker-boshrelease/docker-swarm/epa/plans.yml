@@ -1,0 +1,186 @@
+---
+meta: (( merge ))
+properties:
+  broker:
+    services:
+      - id: (( merge ))
+        name: 'mysql56-PROJECT_NAME'
+        description: 'MySQL 5.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'mysql56'
+          - 'mysql'
+          - 'relational'
+        metadata:
+          displayName: 'MySQL 5.6'
+          longDescription: 'A MySQL 5.6 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: 'frodenas/mysql'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'MYSQL_USERNAME'
+              password:
+                key: 'MYSQL_PASSWORD'
+              dbname:
+                key: 'MYSQL_DBNAME'
+              uri:
+                prefix: 'mysql'
+            description: 'Standard'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated MySQL 5.6 server'
+                - 'MySQL 5.6 running inside a Docker container'
+
+      - id: (( merge ))
+        name: 'redis28-PROJECT_NAME'
+        description: 'Redis 2.8'
+        bindable: true
+        tags:
+          - 'redis28'
+          - 'redis'
+          - 'key-value'
+        metadata:
+          displayName: 'Redis 2.8'
+          longDescription: 'Redis 2.8'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: 'frodenas/redis'
+              tag: '2.8'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              password:
+                key: 'REDIS_PASSWORD'
+            description: 'Standard plan included with dedicated broker.'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Redis 2.8 server'
+                - 'Redis 2.8 running inside a Docker container'
+
+      - id: (( merge ))
+        name: 'mongodb26-PROJECT_NAME'
+        description: 'MongoDB 2.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'mongodb26'
+          - 'mongodb'
+          - 'document'
+        metadata:
+          displayName: 'MongoDB 2.6'
+          longDescription: 'MongDB 2.6'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              image: 'frodenas/mongodb'
+              tag: '2.6'
+              command: '--smallfiles --httpinterface'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'MONGODB_USERNAME'
+              password:
+                key: 'MONGODB_PASSWORD'
+              dbname:
+                key: 'MONGODB_DBNAME'
+              uri:
+                prefix: 'mongodb'
+                port: '27017/tcp'
+            description: 'Standard plan with dedicated broker'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated 2.6 MongoDB server'
+                - 'MongoDB 2.6 running inside a Docker container'
+
+      - id: (( merge ))
+        name: 'elasticsearch171-PROJECT_NAME'
+        description: 'Elasticsearch 1.7.1'
+        bindable: true
+        tags:
+          - 'elasticsearch171'
+          - 'elasticsearch'
+          - 'search'
+        metadata:
+          displayName: 'Elasticsearch 1.7.1'
+          longDescription: 'Elasticsearch 1.7.1'
+          providerDisplayName: '18F'
+          documentationUrl: ''
+          supportUrl: ''
+        dashboard_client:
+          id: (( merge ))
+          secret: (( merge ))
+          redirect_uri: (( merge ))
+        plans:
+          - id: (( merge ))
+            name: 'standard'
+            container:
+              backend: 'docker'
+              environment:
+                - 'ES_HEAP_SIZE=4g'
+              image: '18fgsa/docker-elasticsearch'
+              memory_swap: '0m'
+              persistent_volumes:
+                - '/data'
+              tag: 'v1.7.1'
+            credentials:
+              username:
+                key: 'ES_USERNAME'
+                value: es
+              password:
+                key: 'ES_PASSWORD'
+              uri:
+                prefix: 'http'
+                port: '9200/tcp'
+            description: 'medium'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Elasticsearch 1.7.1 running inside a Docker container'
