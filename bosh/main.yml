@@ -8,9 +8,11 @@ meta:
 # Execute the "bosh status" command to obtain the director_uuid.
 director_uuid: (( merge ))
 
-release:
-  name: bosh
-  version: latest
+releases:
+- name: bosh
+  version: 229
+- name: bosh-aws-cpi
+  version: 36
 
 compilation:
   workers: 3
@@ -37,6 +39,8 @@ networks:
             - (( meta.security_group ))
         range: 10.10.1.0/24
         reserved: [10.10.1.1-10.10.1.6]
+        dns: [10.9.1.6, 10.9.1.2]
+        gateway: 10.9.1.1
 
 resource_pools:
   - name: medium
@@ -50,14 +54,15 @@ resource_pools:
 
 jobs:
   - name: bosh
-    template:
-    - powerdns
-    - nats
-    - redis
-    - director
-    - blobstore
-    - registry
-    - health_monitor
+    templates:
+    - {name: nats, release: bosh}
+    - {name: redis, release: bosh}
+    - {name: blobstore, release: bosh}
+    - {name: director, release: bosh}
+    - {name: health_monitor, release: bosh}
+    - {name: registry, release: bosh}
+    - {name: powerdns, release: bosh}
+    - {name: aws_cpi, release: bosh-aws-cpi}
     instances: 1
     resource_pool: medium
     persistent_disk: 100480
@@ -116,10 +121,15 @@ properties:
 
   registry:
     address: 0.bosh.default.bosh.microbosh
+    host: 0.bosh.default.bosh.microbosh
     db: *bosh_db
     http:
       user: registry
       password: registry
+      port: 25777
+    username: registry
+    password: registry
+    port: 25777
 
   hm:
     http:
@@ -140,3 +150,9 @@ properties:
     default_key_name: bosh
     region: us-east-1
     default_security_groups: [ (( meta.security_group )) ]
+
+  agent: {mbus: "nats://nats:nats@10.9.1.7:4222"}
+  ntp: &ntp [0.pool.ntp.org, 1.pool.ntp.org]
+
+cloud_provider:
+  template: {name: aws_cpi, release: bosh-aws-cpi}
