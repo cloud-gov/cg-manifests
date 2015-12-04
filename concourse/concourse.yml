@@ -79,6 +79,8 @@ releases:
     version: latest
   - name: garden-linux
     version: latest
+  - name: slack-notification-resource
+    version: latest
 
 jobs:
   - name: discovery
@@ -144,6 +146,7 @@ jobs:
       - {release: concourse, name: groundcrew}
       - {release: concourse, name: baggageclaim}
       - {release: garden-linux, name: garden}
+      - {release: slack-notification-resource, name: just_install_packages}
     networks: [{name: concourse}]
     properties:
       garden:
@@ -152,7 +155,38 @@ jobs:
       consul:
         agent:
           servers: {lan: [*discovery_static_ip]}
-
+      groundcrew:
+        resource_types:
+        - type: archive
+          image: /var/vcap/packages/archive_resource
+        - type: cf
+          image: /var/vcap/packages/cf_resource
+        - type: docker-image
+          image: /var/vcap/packages/docker_image_resource
+        - type: git
+          image: /var/vcap/packages/git_resource
+        - type: s3
+          image: /var/vcap/packages/s3_resource
+        - type: semver
+          image: /var/vcap/packages/semver_resource
+        - type: time
+          image: /var/vcap/packages/time_resource
+        - type: tracker
+          image: /var/vcap/packages/tracker_resource
+        - type: pool
+          image: /var/vcap/packages/pool_resource
+        - type: vagrant-cloud
+          image: /var/vcap/packages/vagrant_cloud_resource
+        - type: github-release
+          image: /var/vcap/packages/github_release_resource
+        - type: bosh-io-release
+          image: /var/vcap/packages/bosh_io_release_resource
+        - type: bosh-io-stemcell
+          image: /var/vcap/packages/bosh_io_stemcell_resource
+        - type: bosh-deployment
+          image: /var/vcap/packages/bosh_deployment_resource
+        - type: slack-notification
+          image: /var/vcap/packages/slack-notification-resource
 disk_pools:
   - name: database
     disk_size: (( meta.disk.database.size ))
