@@ -79,6 +79,8 @@ releases:
     version: latest
   - name: garden-linux
     version: latest
+  - name: slack-notification-resource
+    version: latest
 
 jobs:
   - name: discovery
@@ -144,6 +146,7 @@ jobs:
       - {release: concourse, name: groundcrew}
       - {release: concourse, name: baggageclaim}
       - {release: garden-linux, name: garden}
+      - {release: slack-notification-resource, name: just_install_packages}
     networks: [{name: concourse}]
     properties:
       garden:
@@ -152,7 +155,10 @@ jobs:
       consul:
         agent:
           servers: {lan: [*discovery_static_ip]}
-
+      groundcrew:
+        additional_resource_types:
+        - type: slack-notification
+          image: /var/vcap/packages/slack-notification-resource
 disk_pools:
   - name: database
     disk_size: (( meta.disk.database.size ))
