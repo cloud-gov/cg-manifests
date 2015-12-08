@@ -152,6 +152,9 @@ jobs:
       garden:
         listen_network: tcp
         listen_address: 0.0.0.0:7777
+        enable_graph_cleanup: true
+        default_container_grace_time: 10m
+        max_containers: 30
       consul:
         agent:
           servers: {lan: [*discovery_static_ip]}
