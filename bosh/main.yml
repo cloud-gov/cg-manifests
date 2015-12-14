@@ -14,6 +14,8 @@ releases:
   version: 229
 - name: bosh-aws-cpi
   version: 36
+- name: uaa
+  version: latest
 
 compilation:
   workers: 3
@@ -63,6 +65,7 @@ jobs:
     - {name: registry, release: bosh}
     - {name: powerdns, release: bosh}
     - {name: aws_cpi, release: bosh-aws-cpi}
+    - {name: uaa, release: uaa}
     instances: 1
     resource_pool: medium
     persistent_disk: 100480
@@ -109,6 +112,12 @@ properties:
     name: bosh
     address: 0.bosh.default.bosh.microbosh
     db: *bosh_db
+    ssl: (( merge ))
+    user_management:
+      provider: uaa
+      uaa:
+        <<: (( merge ))
+        url: "https://10.10.1.7:8443"
 
   blobstore:
     address: 0.bosh.default.bosh.microbosh
@@ -137,7 +146,8 @@ properties:
       password: hm
     director_account:
       user: admin
-      password: admin
+      password: (( merge ))
+      ca_cert: (( merge ))
     event_nats_enabled: false
     email_notifications: false
     tsdb_enabled: false
@@ -153,6 +163,24 @@ properties:
 
   agent: {mbus: "nats://nats:nats@10.10.1.7:4222"}
   ntp: &ntp [0.pool.ntp.org, 1.pool.ntp.org]
+
+  uaa:
+    <<: (( merge ))
+    url: "https://10.10.1.7:8443"
+    clients:
+      bosh_cli:
+        override: true
+        authorized-grant-types: password,refresh_token
+        # scopes the client may receive
+        scope: openid,bosh.admin,bosh.read,bosh.*.admin,bosh.*.read
+        authorities: uaa.none
+        access-token-validity: 1200 # 10 min
+        refresh-token-validity: 86400 # re-login required once a day
+        secret: ""
+
+    zones: {internal: {hostnames: []}}
+
+  uaadb: (( merge ))
 
 cloud_provider:
   template: {name: aws_cpi, release: bosh-aws-cpi}
