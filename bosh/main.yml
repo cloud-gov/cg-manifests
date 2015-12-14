@@ -2,8 +2,9 @@ name: bosh
 
 meta:
   subnet: ~
-  security_group: ~
+  security_groups: ~
   db: ~
+  default_security_group: ~
 
 # Execute the "bosh status" command to obtain the director_uuid.
 director_uuid: (( merge ))
@@ -35,12 +36,11 @@ networks:
         - 10.10.1.7 - 10.10.1.10
         cloud_properties:
           subnet: (( meta.subnet ))
-          security_groups:
-            - (( meta.security_group ))
+          security_groups: (( meta.security_groups ))
         range: 10.10.1.0/24
-        reserved: [10.10.1.1-10.10.1.6]
-        dns: [10.9.1.6, 10.9.1.2]
-        gateway: 10.9.1.1
+        reserved: [10.10.1.2-10.10.1.6]
+        dns: [10.10.1.6, 10.10.1.2]
+        gateway: 10.10.1.1
 
 resource_pools:
   - name: medium
@@ -149,9 +149,9 @@ properties:
     secret_access_key: (( merge ))
     default_key_name: bosh
     region: us-east-1
-    default_security_groups: [ (( meta.security_group )) ]
+    default_security_groups: [ (( meta.default_security_group )) ]
 
-  agent: {mbus: "nats://nats:nats@10.9.1.7:4222"}
+  agent: {mbus: "nats://nats:nats@10.10.1.7:4222"}
   ntp: &ntp [0.pool.ntp.org, 1.pool.ntp.org]
 
 cloud_provider:
