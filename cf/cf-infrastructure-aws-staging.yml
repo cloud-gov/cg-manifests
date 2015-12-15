@@ -53,6 +53,7 @@ compilation:
     ephemeral_disk:
        size: 30000
        type: gp2
+       encrypted: true
 
 networks: (( merge ))
 
@@ -63,6 +64,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
 
   - name: small_z2
@@ -71,6 +73,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
 
   - name: medium_z1
@@ -79,6 +82,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
 
   - name: medium_z2
@@ -87,6 +91,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
 
   - name: large_z1
@@ -95,6 +100,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
 
   - name: large_z2
@@ -103,6 +109,7 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
 
   - name: runner_z1
@@ -111,6 +118,7 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
 
   - name: runner_z2
@@ -119,6 +127,7 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
 
   - name: router_z1
@@ -127,6 +136,7 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
       elbs: (( merge || meta.elbs ))
 
@@ -136,6 +146,7 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
       elbs: (( merge || meta.elbs ))
 
@@ -145,6 +156,7 @@ resource_pools:
       ephemeral_disk:
         size: 10_240
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
 
   - name: xlarge_errand
