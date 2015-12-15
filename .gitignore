@@ -3,6 +3,8 @@ manifest.yml
 cf-secrets.yml
 secrets.yml
 cf-secrets-staging.yml
+manifest-staging.yml
+manifest-staging.yml--
 
 # Mac files
 .DS_Store
