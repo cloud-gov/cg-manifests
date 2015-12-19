@@ -2,8 +2,6 @@ empty_hash: {}
 
 networks: (( merge ))
 
-consul_servers: (( jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
-
 meta:
   environment: ~
 
@@ -15,6 +13,8 @@ meta:
   custom_release:
     name: 18f-cf
 
+  consul_servers: (( jobs.consul_z1.networks.cf1.static_ips jobs.consul_z2.networks.cf2.static_ips ))
+
   networks:
     z1:
       apps: cf1
@@ -22,11 +22,13 @@ meta:
     z2:
       apps: cf2
 
+  nfs_client_ranges:
+    - (( .networks.cf1.subnets.[0].range || nil ))
+    - (( .networks.cf2.subnets.[0].range || nil ))
+
   nfs_server:
     address: (( jobs.nfs_z1.networks.cf1.static_ips.[0] || nil ))
-    allow_from_entries:
-      - (( .networks.cf1.subnets.[0].range || nil ))
-      - (( .networks.cf2.subnets.[0].range || nil ))
+    allow_from_entries: (( merge || meta.nfs_client_ranges ))
     share: ~
     share_path: (( merge || "" ))
 
@@ -79,7 +81,7 @@ meta:
   - name: gorouter
     release: (( meta.release.name ))
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_templates.consul_agent.release ))
 
   routing_api_templates:
   - name: routing-api
@@ -116,8 +118,10 @@ meta:
   - name: uaa
     release: (( meta.custom_release.name ))
   - name: consul_agent
-    release: (( meta.release.name ))
+    release: (( meta.consul_templates.consul_agent.release ))
   - name: route_registrar
+    release: (( meta.release.name ))
+  - name: statsd-injector
     release: (( meta.release.name ))
 
   login_templates:
@@ -144,10 +148,22 @@ meta:
   - name: metron_agent
     release: (( meta.release.name ))
 
+  loggregator_trafficcontroller_routes:
+  - name: doppler
+    port: (( .properties.loggregator.outgoing_dropsonde_port ))
+    uris:
+    - (( "doppler." .properties.domain ))
+  - name: loggregator
+    port: (( .properties.traffic_controller.outgoing_port ))
+    uris:
+    - (( "loggregator." .properties.domain ))
+
   loggregator_trafficcontroller_templates:
   - name: loggregator_trafficcontroller
     release: (( meta.release.name ))
   - name: metron_agent
+    release: (( meta.release.name ))
+  - name: route_registrar
     release: (( meta.release.name ))
 
   consul_templates:
@@ -283,10 +299,9 @@ jobs:
         zone: z1
       route_registrar:
         routes: (( merge || meta.uaa_routes ))
-      router:
-        servers:
-          z1: (( jobs.router_z1.networks.cf1.static_ips ))
-          z2: (( jobs.router_z2.networks.cf2.static_ips ))
+      uaa:
+        proxy:
+          servers: (( merge || jobs.router_z1.networks.cf1.static_ips jobs.router_z2.networks.cf2.static_ips))
     update: (( merge || empty_hash ))
 
   - name: uaa_z2
@@ -304,10 +319,9 @@ jobs:
         zone: z2
       route_registrar:
         routes: (( merge || meta.uaa_routes ))
-      router:
-        servers:
-          z1: (( jobs.router_z1.networks.cf1.static_ips ))
-          z2: (( jobs.router_z2.networks.cf2.static_ips ))
+      uaa:
+        proxy:
+          servers: (( merge || jobs.router_z1.networks.cf1.static_ips jobs.router_z2.networks.cf2.static_ips))
     update: (( merge || empty_hash ))
 
   - name: stats_z1
@@ -492,6 +506,8 @@ jobs:
         zone: z1
       traffic_controller:
         zone: z1
+      route_registrar:
+        routes: (( merge || meta.loggregator_trafficcontroller_routes ))
     update: (( merge || empty_hash ))
 
   - name: loggregator_trafficcontroller_z2
@@ -505,6 +521,8 @@ jobs:
         zone: z2
       traffic_controller:
         zone: z2
+      route_registrar:
+        routes: (( merge || meta.loggregator_trafficcontroller_routes ))
     update: (( merge || empty_hash ))
 
   - name: router_z1
@@ -598,7 +616,7 @@ properties:
     agent:
       log_level: (( merge || nil ))
       servers:
-        lan: (( consul_servers ))
+        lan: (( meta.consul_servers ))
     ca_cert: ""
     agent_cert: ""
     agent_key: ""
@@ -637,6 +655,8 @@ properties:
 
   etcd:
     machines: (( jobs.etcd_z1.networks.cf1.static_ips jobs.etcd_z2.networks.cf2.static_ips ))
+    peer_require_ssl: false
+    require_ssl: false
 
   etcd_metrics_server:
     nats:
@@ -664,6 +684,11 @@ properties:
     heartbeat_interval_in_seconds: 10
     rlimit_core: (( merge || 0 ))
     allow_host_access: ~
+
+  loggregator:
+    <<: (( merge ))
+    etcd:
+      machines: (( .properties.etcd.machines ))
 
   loggregator_endpoint:
     shared_secret: (( merge ))
