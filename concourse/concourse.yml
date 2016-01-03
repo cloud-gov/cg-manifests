@@ -187,7 +187,7 @@ jobs:
           - type: bosh-io-stemcell
             image: /var/vcap/packages/bosh_io_stemcell_resource
           - type: bosh-deployment
-            image: docker://18fgsa/bosh-deployment-resource
+            image: docker:///18fgsa/bosh-deployment-resource
         additional_resource_types:
           - type: slack-notification
             image: /var/vcap/packages/slack-notification-resource
