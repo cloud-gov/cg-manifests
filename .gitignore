@@ -11,3 +11,6 @@ manifest-staging.yml--
 
 # Eclipse files
 .project
+
+# Temporary directory
+tmp/
