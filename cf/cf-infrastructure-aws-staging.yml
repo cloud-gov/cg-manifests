@@ -16,6 +16,8 @@ meta:
   default_stemcell:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
     version: 3147
+  aws:
+    key_name: ~
 
 properties:
   <<: (( merge ))
@@ -55,6 +57,7 @@ compilation:
     ephemeral_disk:
        size: 30000
        type: gp2
+       encrypted: true
 
 networks: (( merge ))
 
@@ -65,7 +68,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: small_z2
     cloud_properties:
@@ -73,7 +78,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: medium_z1
     cloud_properties:
@@ -81,7 +88,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: medium_z2
     cloud_properties:
@@ -89,7 +98,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: large_z1
     cloud_properties:
@@ -97,7 +108,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: large_z2
     cloud_properties:
@@ -105,7 +118,9 @@ resource_pools:
       ephemeral_disk:
         size: 30_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: runner_z1
     cloud_properties:
@@ -113,7 +128,9 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: runner_z2
     cloud_properties:
@@ -121,7 +138,9 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: router_z1
     cloud_properties:
@@ -129,8 +148,10 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
       elbs: (( merge || meta.elbs ))
+      key_name: (( meta.aws.key_name ))
 
   - name: router_z2
     cloud_properties:
@@ -138,8 +159,10 @@ resource_pools:
       ephemeral_disk:
         size: 65_000
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z2 ))
       elbs: (( merge || meta.elbs ))
+      key_name: (( meta.aws.key_name ))
 
   - name: small_errand
     cloud_properties:
@@ -147,12 +170,15 @@ resource_pools:
       ephemeral_disk:
         size: 10_240
         type: gp2
+        encrypted: true
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
   - name: xlarge_errand
     cloud_properties:
       instance_type: c3.xlarge
       availability_zone: (( meta.zones.z1 ))
+      key_name: (( meta.aws.key_name ))
 
 # set up static IPs
 jobs:
