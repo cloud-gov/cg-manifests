@@ -148,11 +148,16 @@ properties:
       user: admin
       password: (( merge ))
       ca_cert: (( merge ))
+      client_id: hm
+      client_secret: (( merge ))
     event_nats_enabled: false
     email_notifications: false
     tsdb_enabled: false
     pagerduty_enabled: false
     varz_enabled: true
+    resurrector_enabled: true
+    resurrector:
+      minimum_down_jobs: 3
 
   aws:
     access_key_id: (( merge ))
@@ -168,6 +173,12 @@ properties:
     <<: (( merge ))
     url: "https://10.10.1.7:8443"
     clients:
+      hm:
+        override: true
+        authorized-grant-types: client_credentials
+        scope: ""
+        authorities: bosh.admin
+        secret: (( merge )) 
       bosh_cli:
         override: true
         authorized-grant-types: password,refresh_token
