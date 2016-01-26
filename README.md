@@ -15,5 +15,6 @@ Cloud Foundry deployment.
 
 Wherever you have your bosh installation run:
 
+1. `CREATE EXTENSION "uuid-ossp"` on the Postgres RDS instance for ccdb
 1. `bosh deployment manifest.yml`
 1. `bosh deploy`
