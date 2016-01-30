@@ -238,7 +238,7 @@ resource_pools:
       availability_zone: *az
       instance_type: (( meta.resources.workers.instance_type ))
       ephemeral_disk:
-        size: 30000
+        size: 100000
         type: gp2
 
 compilation:
