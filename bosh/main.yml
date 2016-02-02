@@ -44,6 +44,11 @@ networks:
         dns: [10.10.1.6, 10.10.1.2]
         gateway: 10.10.1.1
 
+disk_pools:
+  - name: bosh-ssd
+    disk_size: 300000
+    cloud_properties: {type: gp2}
+
 resource_pools:
   - name: medium
     network: default
@@ -68,7 +73,7 @@ jobs:
     - {name: uaa, release: uaa}
     instances: 1
     resource_pool: medium
-    persistent_disk: 100480
+    persistent_disk_pool: bosh-ssd
     networks:
       - name: default
         static_ips: [10.10.1.7]
