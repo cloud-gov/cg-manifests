@@ -120,7 +120,10 @@ properties:
         url: "https://10.10.1.7:8443"
 
   blobstore:
-    address: 0.bosh.default.bosh.microbosh
+    provider: s3
+    bucket_name: (( merge ))
+    access_key_id: (( merge ))
+    secret_access_key: (( merge ))
     agent:
       user: agent
       password: agent
