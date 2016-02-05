@@ -24,6 +24,11 @@ update:
 
 networks: (( merge ))
 
+disk_pools:
+- name: docker-ssd
+  disk_size: 262144
+  cloud_properties: {type: gp2}
+
 resource_pools:
   - name: docker-a
     network: (( meta.networks.[0].name ))
@@ -92,7 +97,7 @@ jobs:
         release: newrelic
     instances: 1
     resource_pool: docker-a
-    persistent_disk: 65536
+    persistent_disk_pool: docker-ssd
     networks:
       - name: (( meta.networks.[0].name ))
         default: [dns, gateway]
