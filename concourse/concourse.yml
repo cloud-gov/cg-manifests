@@ -146,7 +146,7 @@ jobs:
       - {release: concourse, name: groundcrew}
       - {release: concourse, name: baggageclaim}
       - {release: garden-linux, name: garden}
-      - {release: slack-notification-resource, name: just_install_packages}
+      - {release: slack-notification-resource, name: slack-notification-resource}
     networks: [{name: concourse}]
     properties:
       garden:
