@@ -80,7 +80,7 @@ releases:
   - name: garden-linux
     version: latest
   - name: slack-notification-resource
-    version: latest
+    version: 7
 
 jobs:
   - name: discovery
