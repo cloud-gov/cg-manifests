@@ -236,7 +236,7 @@
             "IpProtocol" : "udp",
             "FromPort" : "53",
             "ToPort" : "53",
-            "CidrIp" : "10.9.0.0/16"
+            "CidrIp" : "10.10.0.0/16"
           },
         ],
         "VpcId" : { "Ref" : "mainVPC" }
