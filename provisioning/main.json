@@ -189,6 +189,56 @@
             "CidrIp" : "10.10.0.0/16"
           }
         ],
+        "SecurityGroupEgress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "4443",
+            "ToPort" : "4443",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.0.1.6/31"
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.0.1.6/31"
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "-1",
+            "ToPort" : "-1",
+            "CidrIp" : "10.0.1.6/31"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "2222",
+            "ToPort" : "2222",
+            "CidrIp" : "52.22.14.222/32"
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "53",
+            "ToPort" : "53",
+            "CidrIp" : "10.9.0.0/16"
+          },
+        ],
         "VpcId" : { "Ref" : "mainVPC" }
       }
     },
@@ -225,7 +275,39 @@
       },
       "DependsOn" : "BoshSecurityGroup"
     },
-
+    "BoshSecurityGroupEgressTCP" : {
+          "Type" : "AWS::EC2::SecurityGroupEgress",
+          "Properties" : {
+            "GroupId" : { "Ref" : "BoshSecurityGroup" },
+            "IpProtocol" : "tcp",
+            "ToPort" : "0",
+            "FromPort" : "65535",
+            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+          },
+          "DependsOn" : "BoshSecurityGroup"
+        },
+        "BoshSecurityGroupEgressUDP" : {
+          "Type" : "AWS::EC2::SecurityGroupEgress",
+          "Properties" : {
+            "GroupId" : { "Ref" : "BoshSecurityGroup" },
+            "IpProtocol" : "udp",
+            "ToPort" : "0",
+            "FromPort" : "65535",
+            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+          },
+          "DependsOn" : "BoshSecurityGroup"
+        },
+    "BoshSecurityGroupEgressICMP" : {
+          "Type" : "AWS::EC2::SecurityGroupEgress",
+          "Properties" : {
+            "GroupId" : { "Ref" : "BoshSecurityGroup" },
+            "IpProtocol" : "icmp",
+            "ToPort" : "-1",
+            "FromPort" : "-1",
+            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
+          },
+          "DependsOn" : "BoshSecurityGroup"
+        },
     "PublicSubnetA" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
