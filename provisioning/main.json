@@ -226,6 +226,24 @@
             "ToPort" : "-1",
             "CidrIp" : "10.0.1.6/31"
           },
+           {
+            "IpProtocol" : "tcp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "udp",
+            "FromPort" : "0",
+            "ToPort" : "65535",
+            "CidrIp" : "10.10.0.0/16"
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "-1",
+            "ToPort" : "-1",
+            "CidrIp" : "10.10.0.0/16"
+          },
           {
             "IpProtocol" : "tcp",
             "FromPort" : "2222",
@@ -236,8 +254,14 @@
             "IpProtocol" : "udp",
             "FromPort" : "53",
             "ToPort" : "53",
-            "CidrIp" : "10.10.0.0/16"
+            "CidrIp" : "0.0.0.0/0"
           },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "53",
+            "ToPort" : "53",
+            "CidrIp" : "0.0.0.0/0"
+          }
         ],
         "VpcId" : { "Ref" : "mainVPC" }
       }
