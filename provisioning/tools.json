@@ -205,80 +205,7 @@
             "CidrIp" : "10.10.0.0/16"
           }
         ],
-        "SecurityGroupEgress" : [
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "80",
-            "ToPort" : "80",
-            "CidrIp" : "0.0.0.0/0"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "443",
-            "ToPort" : "443",
-            "CidrIp" : "0.0.0.0/0"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "4443",
-            "ToPort" : "4443",
-            "CidrIp" : "0.0.0.0/0"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "0",
-            "ToPort" : "65535",
-            "CidrIp" : "10.0.1.6/31"
-          },
-          {
-            "IpProtocol" : "udp",
-            "FromPort" : "0",
-            "ToPort" : "65535",
-            "CidrIp" : "10.0.1.6/31"
-          },
-          {
-            "IpProtocol" : "icmp",
-            "FromPort" : "-1",
-            "ToPort" : "-1",
-            "CidrIp" : "10.0.1.6/31"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "0",
-            "ToPort" : "65535",
-            "CidrIp" : "10.10.0.0/16"
-          },
-          {
-            "IpProtocol" : "udp",
-            "FromPort" : "0",
-            "ToPort" : "65535",
-            "CidrIp" : "10.10.0.0/16"
-          },
-          {
-            "IpProtocol" : "icmp",
-            "FromPort" : "-1",
-            "ToPort" : "-1",
-            "CidrIp" : "10.10.0.0/16"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "2222",
-            "ToPort" : "2222",
-            "CidrIp" : "52.22.14.222/32"
-          },
-          {
-            "IpProtocol" : "udp",
-            "FromPort" : "53",
-            "ToPort" : "53",
-            "CidrIp" : "0.0.0.0/0"
-          },
-          {
-            "IpProtocol" : "tcp",
-            "FromPort" : "53",
-            "ToPort" : "53",
-            "CidrIp" : "0.0.0.0/0"
-          }
-        ],
+
         "VpcId" : { "Ref" : "mainVPC" }
       }
     },
@@ -315,39 +242,7 @@
       },
       "DependsOn" : "BoshSecurityGroup"
     },
-    "BoshSecurityGroupEgressTCP" : {
-          "Type" : "AWS::EC2::SecurityGroupEgress",
-          "Properties" : {
-            "GroupId" : { "Ref" : "BoshSecurityGroup" },
-            "IpProtocol" : "tcp",
-            "ToPort" : "0",
-            "FromPort" : "65535",
-            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
-          },
-          "DependsOn" : "BoshSecurityGroup"
-        },
-        "BoshSecurityGroupEgressUDP" : {
-          "Type" : "AWS::EC2::SecurityGroupEgress",
-          "Properties" : {
-            "GroupId" : { "Ref" : "BoshSecurityGroup" },
-            "IpProtocol" : "udp",
-            "ToPort" : "0",
-            "FromPort" : "65535",
-            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
-          },
-          "DependsOn" : "BoshSecurityGroup"
-        },
-    "BoshSecurityGroupEgressICMP" : {
-          "Type" : "AWS::EC2::SecurityGroupEgress",
-          "Properties" : {
-            "GroupId" : { "Ref" : "BoshSecurityGroup" },
-            "IpProtocol" : "icmp",
-            "ToPort" : "-1",
-            "FromPort" : "-1",
-            "SourceSecurityGroupId" : { "Ref" : "BoshSecurityGroup" }
-          },
-          "DependsOn" : "BoshSecurityGroup"
-        },
+
     "PublicSubnetA" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
@@ -444,6 +339,7 @@
     },
 
     "AttachGateway" : {
+      "DependsOn" : "InternetGateway",
        "Type" : "AWS::EC2::VPCGatewayAttachment",
        "Properties" : {
          "VpcId" : { "Ref" : "mainVPC" },
@@ -464,6 +360,7 @@
 
     "PublicRoute" : {
       "Type" : "AWS::EC2::Route",
+      "DependsOn" : "InternetGateway",
       "Properties" : {
         "RouteTableId" : { "Ref" : "PublicRouteTable" },
         "DestinationCidrBlock" : "0.0.0.0/0",
@@ -500,10 +397,11 @@
 
     "PrivateRouteA" : {
       "Type" : "AWS::EC2::Route",
+      "DependsOn" : "NATa",
       "Properties" : {
         "RouteTableId" : { "Ref" : "PrivateRouteTableA" },
         "DestinationCidrBlock" : "0.0.0.0/0",
-        "InstanceId" : { "Ref" : "NATa" }
+        "NatGatewayId" : { "Ref" : "NATa" }
       }
     },
 
@@ -520,10 +418,11 @@
 
     "PrivateRouteB" : {
       "Type" : "AWS::EC2::Route",
+      "DependsOn" : "NATb",
       "Properties" : {
         "RouteTableId" : { "Ref" : "PrivateRouteTableB" },
         "DestinationCidrBlock" : "0.0.0.0/0",
-        "InstanceId" : { "Ref" : "NATb" }
+        "NatGatewayId" : { "Ref" : "NATb" }
       }
     },
 
@@ -739,7 +638,6 @@
             { "Name" : "Protocol-TLSv1", "Value" : "true" },
             { "Name" : "Protocol-TLSv1.1", "Value" : "true" },
             { "Name" : "Protocol-TLSv1.2", "Value" : "true" },
-            { "Name" : "Protocol-SSLv2", "Value" : "false" },
             { "Name" : "Protocol-SSLv3", "Value" : "false" },
             { "Name" : "Server-Defined-Cipher-Order", "Value" : "true" },
             { "Name" : "ECDHE-ECDSA-AES128-GCM-SHA256", "Value" : "true" },
