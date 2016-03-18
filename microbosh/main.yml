@@ -31,3 +31,7 @@ apply_spec:
     nats: {address: 10.10.1.6}
   properties:
     registry: {address: 10.10.1.6}
+
+properties:
+  hm:
+    cloud_watch_enabled: true
