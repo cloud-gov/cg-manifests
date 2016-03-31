@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Infrastructure components for a Concourse deployment with an ELB.",
+  "Description": "Infrastructure components for a Concourse deployment with an ELB and MultiAZ RDS instance.",
   "Parameters": {
     "ConcourseVPC": {
       "Description": "VPC ID to use for the Concourse system.",
@@ -43,6 +43,54 @@
     "WebSecurityGroup": {
       "Description": "SecurityGroup to use for the ELB.",
       "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "RDSSecurityGroup": {
+      "Description": "SecurityGroup ID to use for the RDS database.",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "RDSSubnetA": {
+      "Description": "Subnet ID to use for the first RDS AZ.",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "RDSSubnetB": {
+      "Description": "Subnet ID to use for the second RDS AZ.",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "DBName": {
+      "Default": "atc",
+      "Description" : "Postgres database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DBUsername": {
+      "NoEcho": "true",
+      "Default": "atc",
+      "Description" : "Username for database access",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DBPassword": {
+      "NoEcho": "true",
+      "Description" : "Password for database access",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+    "DBAllocatedStorage": {
+      "Default": "10",
+      "Description" : "The size of the database (Gb)",
+      "Type": "Number",
+      "MinValue": "5",
+      "MaxValue": "1024",
+      "ConstraintDescription" : "must be between 5 and 1024Gb."
     }
   },
   "Conditions": {
@@ -169,6 +217,38 @@
           }
         ]
       }
+    },
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "RDS Subnets",
+        "SubnetIds": [
+          { "Ref": "RDSSubnetA" },
+          { "Ref": "RDSSubnetB" }
+        ]
+      }
+    },
+    "RDS": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "Engine" : "Postgres",
+        "DBName" : { "Ref": "DBName" },
+        "MultiAZ" : "true",
+        "MasterUsername": { "Ref": "DBUsername" },
+        "MasterUserPassword": { "Ref" : "DBPassword" },
+        "DBInstanceClass": "db.t2.medium",
+        "AllocatedStorage": { "Ref" : "DBAllocatedStorage" },
+        "DBSubnetGroupName": { "Ref" : "DBSubnetGroup" },
+        "VPCSecurityGroups": [
+          { "Ref" : "RDSSecurityGroup" }
+        ]
+      }
+    }
+  },
+  "Outputs" : {
+    "RDSUrl" : {
+      "Value" : { "Fn::GetAtt" : [ "RDS", "Endpoint.Address" ]},
+      "Description" : "RDS Endpoint"
     }
   }
 }
