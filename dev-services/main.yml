@@ -128,3 +128,5 @@ properties:
     default_version: "9.3"
     max_tmp: 900
     password: (( meta.postgres.root_password ))
+  hm:
+    cloud_watch_enabled: true

@@ -138,6 +138,8 @@ properties:
   docker:
     tcp_address: 0.0.0.0
 
+  hm:
+    cloud_watch_enabled: true
   newrelic:
     license_key: (( merge ))
     deployment_tag: (( merge ))
